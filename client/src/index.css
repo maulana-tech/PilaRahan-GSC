@@ -108,3 +108,9 @@
     @apply rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%];
   }
 }
+
+/* Flash animation for camera capture */
+@keyframes flash {
+  0% { opacity: 0.8; }
+  100% { opacity: 0; }
+}

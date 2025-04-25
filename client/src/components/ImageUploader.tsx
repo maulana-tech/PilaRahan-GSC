@@ -362,13 +362,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
         </div>
       )}
       
-      {/* CSS for flash animation */}
-      <style>{`
-        @keyframes flash {
-          0% { opacity: 0.8; }
-          100% { opacity: 0; }
-        }
-      `}</style>
+
     </div>
   );
 }
