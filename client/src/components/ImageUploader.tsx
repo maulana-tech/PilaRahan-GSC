@@ -69,7 +69,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
           clearInterval(interval);
           setUploadProgress(100);
@@ -172,7 +172,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
           }, 600);
         }
         
-        const img = new Image();
+        const img = document.createElement('img');
         img.onload = () => {
           // Animate capture success
           toast({
@@ -363,7 +363,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
       )}
       
       {/* CSS for flash animation */}
-      <style jsx global>{`
+      <style>{`
         @keyframes flash {
           0% { opacity: 0.8; }
           100% { opacity: 0; }
