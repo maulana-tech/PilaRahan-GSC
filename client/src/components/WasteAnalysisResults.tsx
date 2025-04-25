@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Check, Tags, Lightbulb, Globe, MapPin, RotateCw } from "lucide-react";
+import { Check, Tags, Lightbulb, Globe, MapPin, RotateCw, BarChart, Award, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getRecyclingRecommendations } from "@/lib/gemini";
 import { ClassificationResult } from "@/lib/tensorflow";
 import { Link } from "wouter";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 interface WasteAnalysisResultsProps {
   classificationResult: ClassificationResult;
@@ -16,6 +18,8 @@ export default function WasteAnalysisResults({
   onScanAgain,
 }: WasteAnalysisResultsProps) {
   const [showImpactSection, setShowImpactSection] = useState(false);
+  const [showMaterialsSection, setShowMaterialsSection] = useState(false);
+  const [animateProgress, setAnimateProgress] = useState(false);
 
   const { data: recommendations, isLoading } = useQuery({
     queryKey: ['/api/recommendations', classificationResult.type],
@@ -26,13 +30,41 @@ export default function WasteAnalysisResults({
   });
 
   useEffect(() => {
-    // Add a slight delay to show impact section for a smoother UX
-    const timer = setTimeout(() => {
-      setShowImpactSection(true);
-    }, 500);
+    // Staggered animation for smoother UX
+    const timer1 = setTimeout(() => {
+      setAnimateProgress(true);
+    }, 300);
     
-    return () => clearTimeout(timer);
+    const timer2 = setTimeout(() => {
+      setShowMaterialsSection(true);
+    }, 600);
+    
+    const timer3 = setTimeout(() => {
+      setShowImpactSection(true);
+    }, 900);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+      clearTimeout(timer3);
+    };
   }, []);
+
+  // Get badge color based on recyclability score
+  const getScoreBadgeColor = (score: number) => {
+    if (score >= 80) return "bg-green-100 text-green-800";
+    if (score >= 60) return "bg-yellow-100 text-yellow-800";
+    if (score >= 40) return "bg-orange-100 text-orange-800";
+    return "bg-red-100 text-red-800";
+  };
+
+  // Get progress color based on recyclability score
+  const getProgressColor = (score: number) => {
+    if (score >= 80) return "bg-green-500";
+    if (score >= 60) return "bg-yellow-500";
+    if (score >= 40) return "bg-orange-500";
+    return "bg-red-500";
+  };
 
   return (
     <div className="neumorphic p-6 bg-background">
@@ -44,21 +76,70 @@ export default function WasteAnalysisResults({
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {/* Classification Result */}
+        {/* Classification Result with Recyclability Score */}
         <div className="p-4 bg-white rounded-xl shadow">
           <div className="flex items-center mb-3">
             <div className="w-10 h-10 bg-secondary rounded-full flex items-center justify-center text-white mr-3">
               <Tags className="h-5 w-5" />
             </div>
             <h4 className="text-lg font-bold font-poppins">Classification</h4>
+            <div className="ml-auto">
+              <Badge 
+                className={`px-2 py-1 ${getScoreBadgeColor(classificationResult.recyclabilityScore)}`}
+              >
+                {classificationResult.isRecyclable ? "Recyclable" : "Non-Recyclable"}
+              </Badge>
+            </div>
           </div>
-          <p className="text-gray-600 mb-2">This item is classified as:</p>
-          <div className="bg-secondary bg-opacity-10 p-3 rounded-lg text-center">
-            <span className="text-xl font-bold text-secondary">
-              {classificationResult.isRecyclable ? "Recyclable - " : ""}{classificationResult.type}
-            </span>
+          
+          <div className="mb-4">
+            <div className="flex justify-between mb-1">
+              <p className="text-gray-600">Material Type:</p>
+              <span className="font-semibold text-text">{classificationResult.type}</span>
+            </div>
+            
+            <div className="flex justify-between mb-1">
+              <p className="text-gray-600">Confidence:</p>
+              <span className="font-semibold text-text">{Math.round(classificationResult.confidence * 100)}%</span>
+            </div>
+            
+            <div className="mt-4">
+              <div className="flex justify-between mb-2">
+                <div className="flex items-center">
+                  <BarChart className="h-4 w-4 mr-1 text-secondary" />
+                  <span className="text-sm font-medium">Recyclability Score</span>
+                </div>
+                <span className="text-sm font-semibold">{classificationResult.recyclabilityScore}/100</span>
+              </div>
+              <Progress 
+                value={animateProgress ? classificationResult.recyclabilityScore : 0} 
+                max={100} 
+                className={`h-2 transition-all duration-1000 ease-out ${getProgressColor(classificationResult.recyclabilityScore)}`}
+              />
+              <p className="text-xs mt-1 text-gray-500">{classificationResult.recyclabilityDetails}</p>
+            </div>
           </div>
         </div>
+
+        {/* Material Composition Section */}
+        {showMaterialsSection && classificationResult.materialComposition && (
+          <div className="p-4 bg-white rounded-xl shadow animate-in fade-in slide-in-from-bottom-3 duration-500">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white mr-3">
+                <Layers className="h-5 w-5" />
+              </div>
+              <h4 className="text-lg font-bold font-poppins">Material Composition</h4>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {classificationResult.materialComposition.map((property, index) => (
+                <div key={index} className="py-2 px-3 bg-blue-50 rounded-lg text-blue-800 flex items-center">
+                  <Award className="h-4 w-4 mr-2 text-blue-500" />
+                  {property}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Recommendation */}
         <div className="p-4 bg-white rounded-xl shadow">
