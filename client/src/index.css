@@ -1,0 +1,110 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 120 60% 98%;
+    --foreground: 217 33% 17%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 217 33% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 217 33% 17%;
+
+    --primary: 145 66% 49%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 204 70% 53%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+
+    --accent: 28 76% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 145 66% 49%;
+
+    --radius: 0.5rem;
+
+    --chart-1: 145 66% 49%;
+    --chart-2: 204 70% 53%;
+    --chart-3: 28 76% 52%;
+    --chart-4: 165 66% 39%;
+    --chart-5: 15 76% 42%;
+
+    --sidebar-background: 217 33% 17%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 145 66% 49%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 28 76% 52%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 217 10% 25%;
+    --sidebar-ring: 145 66% 49%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 145 66% 49%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 204 70% 53%;
+    --secondary-foreground: 0 0% 0%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 28 76% 52%;
+    --accent-foreground: 0 0% 0%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 145 66% 49%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-montserrat antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-poppins font-bold;
+  }
+}
+
+@layer components {
+  .neumorphic {
+    @apply rounded-xl shadow-[6px_6px_12px_rgba(0,0,0,0.1),-6px_-6px_12px_rgba(255,255,255,0.8)];
+  }
+
+  .neumorphic-inset {
+    @apply rounded-xl shadow-[inset_4px_4px_8px_rgba(0,0,0,0.1),inset_-4px_-4px_8px_rgba(255,255,255,0.8)];
+  }
+
+  .organic-shape {
+    @apply rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%];
+  }
+}
