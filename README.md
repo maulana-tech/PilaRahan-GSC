@@ -82,3 +82,4 @@ The project uses Vite for development with hot module replacement (HMR). The dev
 ## Environment
 
 The application runs on Replit and uses port 5000 for both development and production.
+# WasteWise-GSC
