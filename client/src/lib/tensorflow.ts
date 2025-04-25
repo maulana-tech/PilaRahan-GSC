@@ -1,11 +1,9 @@
 import * as tf from "@tensorflow/tfjs";
 import { classifyWasteType } from "./utils";
 
-// Model URL for a waste classifier model
-// For now we'll use MobileNet which is publicly available and can be adapted for waste classification
-// In production, we would use a custom fine-tuned model specifically for waste classification
+// Model URL for a waste classifier model using a more reliable CDN
 const WASTE_CLASSIFIER_MODEL_URL =
-  "https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/classification/3/default/1";
+  "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json";
 
 export interface ClassificationResult {
   type: string;
@@ -28,18 +26,30 @@ export async function loadModel(): Promise<tf.GraphModel> {
       console.log(`Model loading: ${Math.floor(fraction * 100)}%`);
     };
     
-    // Load the model with loading progress
-    wasteModel = await tf.loadGraphModel(WASTE_CLASSIFIER_MODEL_URL, { onProgress: loadingProgress });
+    // Load the model with loading progress and timeout
+    const modelPromise = tf.loadGraphModel(WASTE_CLASSIFIER_MODEL_URL, { 
+      onProgress: loadingProgress,
+    });
     
-    // Warm up the model with a dummy tensor to reduce first inference latency
+    // Set a timeout of 30 seconds
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("Model loading timed out")), 30000);
+    });
+    
+    // Race between model loading and timeout
+    wasteModel = await Promise.race([modelPromise, timeoutPromise]) as tf.GraphModel;
+    
+    // Warm up the model with a dummy tensor
     const dummyTensor = tf.zeros([1, 224, 224, 3]);
-    wasteModel.predict(dummyTensor);
+    await wasteModel.predict(dummyTensor);
     tf.dispose(dummyTensor);
     
+    console.log("Model loaded successfully");
     return wasteModel;
   } catch (error) {
     console.error("Failed to load the waste classification model:", error);
-    throw new Error("Model loading failed. Please try again later.");
+    // Fall back to simulation mode
+    return null;
   }
 }
 
