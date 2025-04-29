@@ -49,7 +49,7 @@ export async function loadModel(): Promise<tf.GraphModel> {
   } catch (error) {
     console.error("Failed to load the waste classification model:", error);
     // Fall back to simulation mode
-    return null;
+    throw new Error("Failed to load model");
   }
 }
 
