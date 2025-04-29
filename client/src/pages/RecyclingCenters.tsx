@@ -77,7 +77,7 @@ export default function RecyclingCenters() {
                     </div>
                   ))
                 ) : (
-                  recyclingCenters?.map((center: any) => (
+                  (recyclingCenters as any[])?.map((center: any) => (
                     <RecyclingCenterCard
                       key={center.id}
                       name={center.name}
