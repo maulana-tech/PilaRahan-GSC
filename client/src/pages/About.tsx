@@ -6,7 +6,7 @@ export default function About() {
     <section className="pt-32 py-20 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold font-poppins mb-4 text-text">About WasteWise</h2>
+          <h2 className="text-3xl md:text-4xl font-bold font-poppins mb-4 text-text">About PilaRahan</h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Our mission is to simplify waste management and promote sustainable practices through
             innovative technology.
@@ -25,7 +25,7 @@ export default function About() {
           <div className="md:w-1/2">
             <h3 className="text-2xl font-bold font-poppins mb-6 text-text">Our Story</h3>
             <p className="text-gray-600 mb-6">
-              WasteWise was founded by a team of environmental scientists and technology experts who
+              PilaRahan was founded by a team of environmental scientists and technology experts who
               recognized the need for better waste management solutions. Our platform combines
               cutting-edge AI technology with environmental science to help individuals and communities
               reduce waste and increase recycling rates.
@@ -88,7 +88,7 @@ export default function About() {
               description="Solusi pengomposan praktis untuk rumah tangga."
             />
             <ProductItem
-              title="Aplikasi WasteWise"
+              title="Aplikasi PilaRahan"
               href="/produk/aplikasi"
               src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
               description="Pantau dan kelola sampah Anda dengan aplikasi kami."
