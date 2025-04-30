@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -90,7 +90,12 @@
     @apply bg-background text-foreground font-montserrat antialiased;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-poppins font-bold;
   }
 }
@@ -111,10 +116,13 @@
 
 /* Flash animation for camera capture */
 @keyframes flash {
-  0% { opacity: 0.8; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0;
+  }
 }
-
 
 /* Tambahkan styling untuk tampilan Grok-like */
 .grok-theme {
@@ -146,4 +154,13 @@
 
 .grok-button:hover {
   background-color: rgba(76, 175, 80, 0.1);
+}
+
+@keyframes shimmerText {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
