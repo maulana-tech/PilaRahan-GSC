@@ -8,15 +8,15 @@ export default function HeroSection() {
         <div className="mb-8">
           <img 
             src="/logo.png" 
-            alt="WasteWise Logo" 
+            alt="PilaRahan Logo" 
             className="w-16 h-16 mx-auto mb-6"
           />
         </div>
         <h1 className="text-4xl md:text-5xl font-medium mb-6 leading-tight text-foreground">
-          WasteWise
+          PilaRahan
         </h1>
         <p className="text-lg mb-8 text-foreground/70 max-w-xl mx-auto">
-          WasteWise sedang dalam pengembangan. Kami sedang membangun solusi pengelolaan sampah yang lebih cerdas dan ramah lingkungan.
+          PilaRahan sedang dalam pengembangan. Kami sedang membangun solusi pengelolaan sampah yang lebih cerdas dan ramah lingkungan.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button asChild className="px-6 py-2 rounded-md">

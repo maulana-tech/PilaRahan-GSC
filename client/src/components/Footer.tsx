@@ -5,10 +5,10 @@ export default function Footer() {
     <footer className="py-8 px-4 text-foreground/70 bg-background">
       <div className="max-w-3xl mx-auto text-center">
         <p className="text-sm mb-2">
-          WasteWise adalah layanan pengelolaan sampah berbasis AI.
+          PilaRahan adalah layanan pengelolaan sampah berbasis AI.
         </p>
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} WasteWise. Hak cipta dilindungi.
+          &copy; {new Date().getFullYear()} PilaRahan. Hak cipta dilindungi.
         </p>
       </div>
     </footer>

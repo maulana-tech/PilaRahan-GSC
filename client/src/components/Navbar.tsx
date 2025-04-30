@@ -35,10 +35,10 @@ export function NavbarWrapper() {
         <div className="flex items-center">
           <img 
             src="/logo.png" 
-            alt="WasteWise Logo" 
+            alt="PilaRahan Logo" 
             className="h-10 w-10 mr-2"
           />
-          <span className="text-emerald-800 dark:text-emerald-400 font-medium text-lg">WasteWise</span>
+          <span className="text-emerald-800 dark:text-emerald-400 font-medium text-lg">PilaRahan</span>
         </div>
       </div>
       
@@ -68,7 +68,6 @@ export function NavbarWrapper() {
           <MobileMenuItem href="/scan" onClick={() => setIsMenuOpen(false)}>
             Scan
           </MobileMenuItem>
-          
           <MobileSubmenu title="Layanan">
             <MobileMenuItem href="/learning" onClick={() => setIsMenuOpen(false)}>
               Learning
@@ -83,7 +82,6 @@ export function NavbarWrapper() {
           <MobileMenuItem href="/ai-chat" onClick={() => setIsMenuOpen(false)}>
             AI Assistant
           </MobileMenuItem>
-          
         </MobileMenu>
       )}
     </div>

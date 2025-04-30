@@ -111,7 +111,7 @@ export default function LearningCenter() {
               description="Solusi pengomposan praktis untuk rumah tangga."
             />
             <ProductItem
-              title="Aplikasi WasteWise"
+              title="Aplikasi PilaRahan"
               href="/produk/aplikasi"
               src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
               description="Pantau dan kelola sampah Anda dengan aplikasi kami."

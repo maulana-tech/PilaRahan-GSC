@@ -1,6 +1,7 @@
 
 # PilaRahan - Smart Waste Classification System
 
+
 PilaRahan is an AI-powered web application that helps users classify waste items and provides recycling recommendations.
 
 ## Features
@@ -50,6 +51,8 @@ PilaRahan is an AI-powered web application that helps users classify waste items
 
 4. The application will be available at port 5000.
 
+
+
 ## Environment Variables
 
 This project requires certain environment variables to be set for configuration, particularly for the database connection and session management.
@@ -74,3 +77,4 @@ The project uses Vite for development with hot module replacement (HMR). The dev
 
 The application runs on Replit and uses port 5000 for both development and production.
 # PilaRahan-GSC
+
