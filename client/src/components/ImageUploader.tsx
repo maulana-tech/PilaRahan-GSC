@@ -1,5 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Upload, Camera, Image, FileImage, MoveUpRight, ChevronsUp, RefreshCw, Check } from "lucide-react";
+import {
+  Upload,
+  Camera,
+  Image,
+  FileImage,
+  MoveUpRight,
+  ChevronsUp,
+  RefreshCw,
+  Check,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
@@ -10,7 +19,10 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-export default function ImageUploader({ onImageCaptured, className }: ImageUploaderProps) {
+export default function ImageUploader({
+  onImageCaptured,
+  className,
+}: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -23,23 +35,25 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   const [streamActive, setStreamActive] = useState(false);
   const isMobile = useMobile();
   const dropZoneRef = useRef<HTMLDivElement>(null);
-  
+
   // Check if device has camera
   useEffect(() => {
     const checkCamera = async () => {
       try {
         const devices = await navigator.mediaDevices.enumerateDevices();
-        const hasVideoInput = devices.some(device => device.kind === 'videoinput');
+        const hasVideoInput = devices.some(
+          (device) => device.kind === "videoinput"
+        );
         setHasCamera(hasVideoInput);
       } catch (err) {
-        console.log('Error checking for camera:', err);
+        console.log("Error checking for camera:", err);
         setHasCamera(false);
       }
     };
-    
+
     checkCamera();
   }, []);
-  
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
@@ -48,7 +62,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   };
 
   const processFile = (file: File) => {
-    if (!file.type.match('image.*')) {
+    if (!file.type.match("image.*")) {
       toast({
         title: "Invalid file type",
         description: "Please upload an image file (JPEG, PNG, etc.)",
@@ -69,11 +83,11 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        const img = document.createElement('img');
+        const img = document.createElement("img");
         img.onload = () => {
           clearInterval(interval);
           setUploadProgress(100);
-          
+
           // Short delay to show 100% before completing
           setTimeout(() => {
             onImageCaptured(img.src, img);
@@ -100,7 +114,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       processFile(e.dataTransfer.files[0]);
     }
@@ -109,22 +123,23 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   const handleOpenCamera = async () => {
     try {
       setIsCapturing(true);
-      
+
       // Stop any existing stream
       if (streamActive && videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach(track => track.stop());
+        tracks.forEach((track) => track.stop());
       }
-      
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }, 
-        audio: false 
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        // video: {
+        //   facingMode: "environment",
+        //   width: { ideal: 1920 },
+        //   height: { ideal: 1080 },
+        // },
+        video: true,
+        audio: false,
       });
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setStreamActive(true);
@@ -145,47 +160,49 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
       const canvas = document.createElement("canvas");
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
-      
+
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        
+
         // Flash effect
-        const flashElement = document.createElement('div');
-        flashElement.style.position = 'absolute';
-        flashElement.style.top = '0';
-        flashElement.style.left = '0';
-        flashElement.style.right = '0';
-        flashElement.style.bottom = '0';
-        flashElement.style.backgroundColor = 'white';
-        flashElement.style.opacity = '0.8';
-        flashElement.style.zIndex = '10';
-        flashElement.style.animation = 'flash 0.6s';
-        
+        const flashElement = document.createElement("div");
+        flashElement.style.position = "absolute";
+        flashElement.style.top = "0";
+        flashElement.style.left = "0";
+        flashElement.style.right = "0";
+        flashElement.style.bottom = "0";
+        flashElement.style.backgroundColor = "white";
+        flashElement.style.opacity = "0.8";
+        flashElement.style.zIndex = "10";
+        flashElement.style.animation = "flash 0.6s";
+
         const container = videoRef.current.parentElement;
         if (container) {
-          container.style.position = 'relative';
+          container.style.position = "relative";
           container.appendChild(flashElement);
-          
+
           setTimeout(() => {
             container.removeChild(flashElement);
           }, 600);
         }
-        
-        const img = document.createElement('img');
+
+        const img = document.createElement("img");
         img.onload = () => {
           // Animate capture success
           toast({
             title: "Image captured",
             description: "Processing your waste item...",
           });
-          
+
           onImageCaptured(img.src, img);
-          
+
           // Stop the stream after capturing
           if (videoRef.current && videoRef.current.srcObject) {
-            const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-            tracks.forEach(track => track.stop());
+            const tracks = (
+              videoRef.current.srcObject as MediaStream
+            ).getTracks();
+            tracks.forEach((track) => track.stop());
             setStreamActive(false);
             setIsCapturing(false);
           }
@@ -198,7 +215,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   const handleCancelCapture = () => {
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
+      tracks.forEach((track) => track.stop());
       setStreamActive(false);
     }
     setIsCapturing(false);
@@ -213,7 +230,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
   return (
     <div className={cn("neumorphic p-6 bg-background relative", className)}>
       {!isCapturing ? (
-        <div 
+        <div
           ref={dropZoneRef}
           className={cn(
             "neumorphic-inset p-8 bg-background flex flex-col items-center justify-center min-h-[400px] cursor-pointer relative overflow-hidden transition-all duration-300",
@@ -231,57 +248,72 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary opacity-5 rounded-full"></div>
             <div className="absolute bottom-10 -left-20 w-40 h-40 bg-secondary opacity-5 rounded-full"></div>
           </div>
-          
+
           {isUploading ? (
             <div className="flex flex-col items-center justify-center w-full z-10">
               <div className="relative mb-6">
                 <div className="w-20 h-20 rounded-full border-4 border-gray-200 flex items-center justify-center">
-                  <div 
-                    className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent" 
-                    style={{ 
+                  <div
+                    className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent"
+                    style={{
                       transform: `rotate(${uploadProgress * 3.6}deg)`,
-                      transition: 'transform 0.3s ease-out'
+                      transition: "transform 0.3s ease-out",
                     }}
                   ></div>
                   <FileImage className="h-8 w-8 text-primary" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-text mb-2">Uploading Image</h3>
-              <p className="text-gray-600 mb-4">Processing your waste item...</p>
+              <h3 className="text-xl font-bold text-text mb-2">
+                Uploading Image
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Processing your waste item...
+              </p>
               <div className="w-full max-w-xs h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-primary transition-all duration-300 ease-out" 
+                <div
+                  className="h-full bg-primary transition-all duration-300 ease-out"
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
-              <p className="mt-2 text-sm text-gray-500">{uploadProgress}% complete</p>
+              <p className="mt-2 text-sm text-gray-500">
+                {uploadProgress}% complete
+              </p>
             </div>
           ) : (
             <>
               <div className="relative">
-                <div className={cn(
-                  "absolute inset-0 bg-primary bg-opacity-10 rounded-full scale-100 opacity-0 transition-all duration-500",
-                  (isDragging || isHovering) && "scale-[1.5] opacity-100"
-                )}></div>
-                <div className={cn(
-                  "relative z-10 p-6 rounded-full bg-primary bg-opacity-10 transition-all duration-300", 
-                  (isDragging || isHovering) && "bg-opacity-20 scale-95"
-                )}>
-                  <Upload className={cn(
-                    "h-12 w-12 text-primary transition-all duration-300",
-                    (isDragging || isHovering) && "scale-110"
-                  )} />
+                <div
+                  className={cn(
+                    "absolute inset-0 bg-primary bg-opacity-10 rounded-full scale-100 opacity-0 transition-all duration-500",
+                    (isDragging || isHovering) && "scale-[1.5] opacity-100"
+                  )}
+                ></div>
+                <div
+                  className={cn(
+                    "relative z-10 p-6 rounded-full bg-primary bg-opacity-10 transition-all duration-300",
+                    (isDragging || isHovering) && "bg-opacity-20 scale-95"
+                  )}
+                >
+                  <Upload
+                    className={cn(
+                      "h-12 w-12 text-primary transition-all duration-300",
+                      (isDragging || isHovering) && "scale-110"
+                    )}
+                  />
                 </div>
               </div>
               <p className="text-lg mt-6 mb-6 text-center text-gray-600 max-w-xs">
-                {isDragging ? 
-                  <span className="text-primary font-medium">Drop your image here!</span> :
+                {isDragging ? (
+                  <span className="text-primary font-medium">
+                    Drop your image here!
+                  </span>
+                ) : (
                   "Drag & drop an image here or tap to browse"
-                }
+                )}
               </p>
-              <Button 
+              <Button
                 className={cn(
-                  "rounded-full font-poppins font-medium transition-all duration-300", 
+                  "rounded-full font-poppins font-medium transition-all duration-300",
                   (isDragging || isHovering) && "bg-opacity-90 scale-105"
                 )}
               >
@@ -296,7 +328,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
                 className="hidden"
                 onChange={handleFileChange}
               />
-              
+
               {hasCamera && (
                 <>
                   <div className="mt-4 flex items-center gap-3">
@@ -304,8 +336,8 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
                     <span className="text-gray-500">or</span>
                     <div className="h-px w-20 bg-gray-300"></div>
                   </div>
-                  
-                  <Button 
+
+                  <Button
                     variant="secondary"
                     className="mt-4 rounded-full font-poppins font-medium transition-all duration-300 hover:scale-105"
                     onClick={(e) => {
@@ -317,7 +349,7 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
                   </Button>
                 </>
               )}
-              
+
               {/* Floating animation elements for enhanced UI */}
               <div className="absolute -bottom-10 -right-10 opacity-10 animate-pulse">
                 <RefreshCw className="h-20 w-20 text-primary" />
@@ -344,15 +376,15 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
             </div>
           </div>
           <div className="flex space-x-4">
-            <Button 
-              variant="default" 
+            <Button
+              variant="default"
               className="rounded-full"
               onClick={handleCaptureImage}
             >
               <Check className="mr-2 h-4 w-4" /> Capture Photo
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="rounded-full"
               onClick={handleCancelCapture}
             >
@@ -361,8 +393,6 @@ export default function ImageUploader({ onImageCaptured, className }: ImageUploa
           </div>
         </div>
       )}
-      
-
     </div>
   );
 }
