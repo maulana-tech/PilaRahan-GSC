@@ -114,3 +114,36 @@
   0% { opacity: 0.8; }
   100% { opacity: 0; }
 }
+
+
+/* Tambahkan styling untuk tampilan Grok-like */
+.grok-theme {
+  --background: #1a1a1a;
+  --foreground: #e0e0e0;
+  --primary: #4caf50;
+  --primary-foreground: #ffffff;
+  --secondary: #2e7d32;
+  --border: #333333;
+  --input: #2a2a2a;
+  --ring: #4caf50;
+}
+
+.dark .chat-input {
+  background-color: #2a2a2a;
+  border-color: #333333;
+}
+
+.rounded-chat-bubble {
+  border-radius: 18px;
+}
+
+.grok-button {
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.grok-button:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}

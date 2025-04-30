@@ -64,37 +64,6 @@ This project requires certain environment variables to be set for configuration,
 
 The `.env.example` file serves as a template listing all the required variables.
 
-## Main Components
-
-- **Scan Page**: Upload images for waste classification
-- **Learning Center**: Educational resources about recycling
-- **Recycling Centers**: Find nearby recycling facilities
-- **About**: Information about the project
-
-## Features in Detail
-
-### Waste Classification
-- Uses TensorFlow.js for image analysis
-- Provides detailed classification results
-- Shows recyclability score and disposal instructions
-
-### Recycling Centers
-- Interactive map interface
-- List of nearby recycling centers
-- Filtering by waste type acceptance
-
-### Learning Resources
-- Educational content about recycling
-- Best practices for waste management
-- Environmental impact information
-
-## API Endpoints
-
-The backend provides several API endpoints:
-
-- `/api/recommendations` - Get recycling recommendations
-- `/api/centers` - Find recycling centers
-- `/api/classify` - Classify waste images
 
 ## Development
 

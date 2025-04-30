@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import axios from "axios";
+import aiChatRouter from "./routes/aiChat";
 
 // Gemini AI API key would come from environment variables
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
@@ -9,6 +10,9 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 export async function registerRoutes(app: Express): Promise<Server> {
   // prefix all routes with /api
   const apiPrefix = "/api";
+  
+  // Gunakan router AI Chat
+  app.use(aiChatRouter);
 
   // Learning Resources Endpoints
   app.get(`${apiPrefix}/learning-resources`, async (req, res) => {
