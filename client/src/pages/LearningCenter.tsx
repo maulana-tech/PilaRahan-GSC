@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import LearningResourceCard from "@/components/LearningResourceCard";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ProductItem } from "@/components/ui/navigation-menu";
 
 export default function LearningCenter() {
   const { data: resources, isLoading } = useQuery({
@@ -36,7 +37,7 @@ export default function LearningCenter() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {resources?.map((resource: any) => (
+            {(resources as any[])?.map((resource: any) => (
               <LearningResourceCard
                 key={resource.id}
                 id={resource.id}
@@ -85,6 +86,43 @@ export default function LearningCenter() {
           <Button className="px-8 py-3 rounded-full neumorphic">
             View All Resources
           </Button>
+        </div>
+
+        {/* Produk Section */}
+        <div className="mt-20 pt-16 border-t border-gray-100">
+          <div className="text-center mb-10">
+            <h3 className="text-2xl font-bold font-poppins mb-4 text-text">Recommended Products</h3>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              These products can help you implement what you've learned and make sustainable waste management easier.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto">
+            <ProductItem
+              title="Tempat Sampah Pintar"
+              href="/produk/tempat-sampah"
+              src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+              description="Tempat sampah dengan teknologi pemilahan otomatis."
+            />
+            <ProductItem
+              title="Komposter Rumahan"
+              href="/produk/komposter"
+              src="https://images.unsplash.com/photo-1582560475093-ba66accbc095?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+              description="Solusi pengomposan praktis untuk rumah tangga."
+            />
+            <ProductItem
+              title="Aplikasi WasteWise"
+              href="/produk/aplikasi"
+              src="https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+              description="Pantau dan kelola sampah Anda dengan aplikasi kami."
+            />
+            <ProductItem
+              title="Kerajinan Daur Ulang"
+              href="/produk/kerajinan"
+              src="https://images.unsplash.com/photo-1604187351574-c75ca79f5807?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+              description="Produk kerajinan berkualitas dari bahan daur ulang."
+            />
+          </div>
         </div>
       </div>
     </section>
