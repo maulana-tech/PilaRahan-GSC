@@ -7,14 +7,15 @@ import Scan from "@/pages/Scan";
 import LearningCenter from "@/pages/LearningCenter";
 import RecyclingCenters from "@/pages/RecyclingCenters";
 import About from "@/pages/About";
-import Navbar from "@/components/Navbar";
+import AiChat from "@/pages/AiChat";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";
+import { NavbarWrapper } from "./components/Navbar";
 
 function Router() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
+    <div className="flex flex-col min-h-screen bg-background">
+      <NavbarWrapper />
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
@@ -22,6 +23,7 @@ function Router() {
           <Route path="/learning" component={LearningCenter} />
           <Route path="/recycling-centers" component={RecyclingCenters} />
           <Route path="/about" component={About} />
+          <Route path="/ai-chat" component={AiChat} />
           <Route component={NotFound} />
         </Switch>
       </main>
