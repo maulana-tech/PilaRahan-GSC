@@ -88,6 +88,13 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        shimmer: "shimmerText 3s linear infinite",
+      },
+      backgroundImage: {
+        shimmer: "linear-gradient(90deg, #4ade80, #22d3ee, #6366f1)",
+      },
+      backgroundSize: {
+        "shimmer-size": "200% 100%",
       },
     },
   },

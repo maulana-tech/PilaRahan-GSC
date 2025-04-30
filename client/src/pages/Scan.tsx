@@ -235,13 +235,6 @@ export default function Scan() {
                           <Bot className="h-6 w-6" />
                         </div>
                       </div>
-                      <h3 className="text-2xl font-bold font-poppins mb-3 text-text">
-                        AI-Powered Waste Analysis
-                      </h3>
-                      <p className="text-gray-600 text-center max-w-md mb-6">
-                        Our advanced image recognition technology identifies waste items with high accuracy
-                        and provides tailored recycling guidance.
-                      </p>
                       
                       {!isMobile && (
                         <div className="grid grid-cols-2 gap-4 mt-4">
