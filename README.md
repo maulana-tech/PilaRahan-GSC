@@ -1,7 +1,7 @@
 
-# PisaRahan - Smart Waste Classification System
+# PilaRahan - Smart Waste Classification System
 
-PisaRahan is an AI-powered web application that helps users classify waste items and provides recycling recommendations.
+PilaRahan is an AI-powered web application that helps users classify waste items and provides recycling recommendations.
 
 ## Features
 
@@ -73,4 +73,4 @@ The project uses Vite for development with hot module replacement (HMR). The dev
 
 
 The application runs on Replit and uses port 5000 for both development and production.
-# PisaRahan-GSC
+# PilaRahan-GSC
