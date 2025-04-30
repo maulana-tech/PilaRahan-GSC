@@ -179,7 +179,7 @@ export default function AiChat() {
                             <Leaf className="h-5 w-5 text-primary" />
                           ) : null}
                           <span className="text-xs opacity-70">
-                            {message.sender === "user" ? "Anda" : "WasteWise AI"} • {message.timestamp.toLocaleTimeString()}
+                            {message.sender === "user" ? "Anda" : "PilaRahan AI"} • {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
                         <div className="whitespace-pre-line">{message.content}</div>
@@ -196,7 +196,7 @@ export default function AiChat() {
                     className="flex items-center justify-center p-4 bg-background/80 rounded-lg shadow-sm max-w-[80%] mr-auto"
                   >
                     <Loader2 className="h-5 w-5 animate-spin text-primary mr-2" />
-                    <span className="text-sm text-muted-foreground">WasteWise AI sedang berpikir...</span>
+                    <span className="text-sm text-muted-foreground">PilaRahan AI sedang berpikir...</span>
                   </motion.div>
                 )}
                 

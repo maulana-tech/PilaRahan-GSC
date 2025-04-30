@@ -105,14 +105,14 @@ export function ChatInterface({
         <div className="flex items-center justify-center gap-2 mt-2">
           <Button variant="ghost" size="sm" className="text-xs rounded-full hover:bg-primary/10 transition-colors duration-200">
             <Leaf className="h-3 w-3 mr-1" />
-            WasteWise
+            PilaRahan
           </Button>
           <Button variant="ghost" size="sm" className="text-xs rounded-full hover:bg-primary/10 transition-colors duration-200">
             <Sparkles className="h-3 w-3 mr-1" />
             Cerdas
           </Button>
           <div className="ml-auto text-xs text-muted-foreground">
-            WasteWise AI
+            PilaRahan AI
           </div>
         </div>
       </motion.div>

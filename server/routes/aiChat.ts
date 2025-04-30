@@ -20,7 +20,7 @@ router.post("/api/ai-chat", async (req, res) => {
 
     // Prompt untuk memastikan respons fokus pada pengolahan sampah
     const prompt = `
-      Kamu adalah asisten AI dari WasteWise, aplikasi pengelolaan sampah pintar.
+      Kamu adalah asisten AI dari PilaRahan, aplikasi pengelolaan sampah pintar.
       Berikan informasi yang akurat dan bermanfaat tentang:
       - Cara mendaur ulang berbagai jenis sampah
       - Dampak lingkungan dari sampah

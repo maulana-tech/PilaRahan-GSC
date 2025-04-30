@@ -133,7 +133,7 @@ export default function Scan() {
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center p-2 bg-primary/10 rounded-full mb-4">
               <ScanIcon className="h-6 w-6 text-primary mr-2" />
-              <span className="text-sm font-medium text-primary">WasteWise Scanner</span>
+              <span className="text-sm font-medium text-primary">PilaRahan Scanner</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold font-poppins mb-4 text-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
               Identify & Recycle
