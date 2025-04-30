@@ -151,9 +151,6 @@ export default function AiChat() {
                 <WelcomeMessage />
                 {showSuggestions && (
                   <div className="animate-fadeIn">
-                    <h2 className="text-center text-sm font-medium text-muted-foreground mb-2">
-                      Pertanyaan yang disarankan:
-                    </h2>
                     <SuggestedQuestions onQuestionClick={handleSuggestedQuestionClick} />
                   </div>
                 )}
