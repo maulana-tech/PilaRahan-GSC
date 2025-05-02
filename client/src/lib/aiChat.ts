@@ -1,129 +1,35 @@
-'use server';
-/**
- * @fileOverview A flow to answer user questions about waste processing based on waste classification.
- */
+import { generateGeminiResponse } from "./gemini";
 
-import { createChatSession } from '@/lib/gemini';
-
-export interface AnswerWasteQuestionInput {
-  wasteClassification: 'Recycle' | 'Organic';
-  question: string;
-}
-
-export interface AnswerWasteQuestionOutput {
-  answer: string;
-}
-
-// Interface untuk respons chat AI
-export interface AiChatResponse {
-  message: string;
-  environmentalTips?: string[];
-}
-
-// Fungsi untuk mendapatkan respons chat AI
-export async function getAiChatResponse(message: string): Promise<AiChatResponse> {
+// Fungsi untuk mendapatkan respons dari AI
+export async function getAiChatResponse(message: string): Promise<string> {
   try {
-    const model = createChatSession();
+    // Tambahkan konteks tentang PilaRahan ke prompt
+    const enhancedPrompt = `Sebagai asisten AI PilaRahan yang fokus pada pengelolaan sampah dan lingkungan, tolong bantu menjawab pertanyaan berikut dengan informasi yang akurat dan bermanfaat: ${message}`;
     
-    // Buat prompt untuk model AI
-    const prompt = `Kamu adalah asisten AI dari PilaRahan, aplikasi pengelolaan sampah pintar.
-Berikan informasi yang akurat dan bermanfaat tentang:
-- Cara mendaur ulang berbagai jenis sampah
-- Dampak lingkungan dari sampah
-- Praktik pengelolaan sampah yang berkelanjutan
-- Tips mengurangi sampah sehari-hari
-
-Pertanyaan pengguna: ${message}`;
-
-    // Generate konten menggunakan model Gemini
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const textResponse = response.text();
-    
-    if (!textResponse) {
-      throw new Error('AI gagal menghasilkan jawaban.');
-    }
-    
-    // Generate tips lingkungan berdasarkan konteks pesan
-    const environmentalTips = generateEnvironmentalTips(message);
-    
-    return {
-      message: textResponse,
-      environmentalTips
-    };
+    // Gunakan Gemini API untuk mendapatkan respons
+    const response = await generateGeminiResponse(enhancedPrompt);
+    return response;
   } catch (error) {
-    console.error('Error generating AI response:', error);
-    throw new Error('Gagal menghasilkan jawaban. Silakan coba lagi nanti.');
+    console.error("Error saat mendapatkan respons AI:", error);
+    throw error;
   }
 }
 
-// Fungsi untuk menghasilkan tips lingkungan berdasarkan konteks pesan
-function generateEnvironmentalTips(message: string): string[] {
-  const lowerMessage = message.toLowerCase();
-  
-  // Tips dasar berdasarkan jenis sampah yang disebutkan dalam pesan
-  if (lowerMessage.includes("plastik")) {
-    return [
-      "Kurangi penggunaan plastik sekali pakai",
-      "Pilih produk dengan kemasan yang dapat didaur ulang",
-      "Bawa tas belanja sendiri saat berbelanja",
-    ];
-  } else if (lowerMessage.includes("kertas")) {
-    return [
-      "Gunakan kedua sisi kertas saat mencetak",
-      "Pilih produk kertas dari sumber yang berkelanjutan",
-      "Daur ulang kertas bekas untuk mengurangi penebangan pohon",
-    ];
-  } else if (lowerMessage.includes("elektronik") || lowerMessage.includes("gadget")) {
-    return [
-      "Jangan buang elektronik bekas ke tempat sampah biasa",
-      "Cari pusat daur ulang elektronik terdekat",
-      "Pertimbangkan untuk memperbaiki alat elektronik daripada menggantinya",
-    ];
-  } else if (lowerMessage.includes("organik") || lowerMessage.includes("makanan")) {
-    return [
-      "Buat kompos dari sisa makanan untuk mengurangi sampah",
-      "Rencanakan makanan dengan baik untuk mengurangi pemborosan",
-      "Simpan makanan dengan benar agar lebih tahan lama",
-    ];
-  } else {
-    // Tips umum jika tidak ada kata kunci spesifik
-    return [
-      "Terapkan prinsip 3R: Reduce, Reuse, Recycle",
-      "Pisahkan sampah berdasarkan jenisnya untuk memudahkan daur ulang",
-      "Edukasi orang lain tentang pentingnya pengelolaan sampah yang baik",
-    ];
-  }
-}
-
-// Exported function to answer waste questions
-export async function answerWasteQuestion(input: AnswerWasteQuestionInput): Promise<AnswerWasteQuestionOutput> {
+// Fungsi untuk mendapatkan tips lingkungan berdasarkan konteks percakapan
+export async function getEnvironmentalTips(context: string): Promise<string[]> {
   try {
-    const model = createChatSession();
+    const prompt = `Berdasarkan konteks percakapan berikut: "${context}", berikan 3 tips praktis tentang pengelolaan sampah atau pelestarian lingkungan yang relevan. Berikan hanya daftar tips tanpa penjelasan tambahan.`;
     
-    // Create prompt with the input data
-    const prompt = `You are EcoSage AI, a helpful assistant specializing in waste management and sustainability in Indonesia.
-The user has identified waste classified as '${input.wasteClassification}'.
-Please answer their question clearly and provide practical, actionable tips relevant to Indonesia where possible.
-
-User Question: ${input.question}
-
-Your Answer:`;
-
-    // Generate content using the Gemini model
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const textResponse = response.text();
+    const response = await generateGeminiResponse(prompt);
     
-    if (!textResponse) {
-      throw new Error('AI failed to generate an answer.');
-    }
+    // Parsing respons menjadi array tips
+    const tips = response
+      .split(/\d+\.\s+/) // Split berdasarkan pola "1. ", "2. ", dll.
+      .filter(tip => tip.trim().length > 0);
     
-    return {
-      answer: textResponse
-    };
+    return tips;
   } catch (error) {
-    console.error('Error generating AI response:', error);
-    throw new Error('Failed to generate an answer. Please try again later.');
+    console.error("Error saat mendapatkan tips lingkungan:", error);
+    return [];
   }
 }
