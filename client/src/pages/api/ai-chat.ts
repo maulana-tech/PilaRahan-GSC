@@ -1,31 +1,26 @@
-'use server';
-/**
- * @fileOverview A flow to answer user questions about waste processing based on waste classification.
- */
+import { NextApiRequest, NextApiResponse } from 'next';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-import { createChatSession } from '@/lib/gemini';
+// Inisialisasi AI di sisi server
+const ai = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_GENAI_API_KEY || '');
 
-export interface AnswerWasteQuestionInput {
-  wasteClassification: 'Recycle' | 'Organic';
-  question: string;
-}
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-export interface AnswerWasteQuestionOutput {
-  answer: string;
-}
-
-// Interface untuk respons chat AI
-export interface AiChatResponse {
-  message: string;
-  environmentalTips?: string[];
-}
-
-// Fungsi untuk mendapatkan respons chat AI
-export async function getAiChatResponse(message: string): Promise<AiChatResponse> {
   try {
-    const model = createChatSession();
+    const { message } = req.body;
     
-    // Buat prompt untuk model AI
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    const model = ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
     const prompt = `Kamu adalah asisten AI dari PilaRahan, aplikasi pengelolaan sampah pintar.
 Berikan informasi yang akurat dan bermanfaat tentang:
 - Cara mendaur ulang berbagai jenis sampah
@@ -35,25 +30,20 @@ Berikan informasi yang akurat dan bermanfaat tentang:
 
 Pertanyaan pengguna: ${message}`;
 
-    // Generate konten menggunakan model Gemini
     const result = await model.generateContent(prompt);
     const response = result.response;
     const textResponse = response.text();
     
-    if (!textResponse) {
-      throw new Error('AI gagal menghasilkan jawaban.');
-    }
-    
     // Generate tips lingkungan berdasarkan konteks pesan
     const environmentalTips = generateEnvironmentalTips(message);
     
-    return {
+    return res.status(200).json({
       message: textResponse,
       environmentalTips
-    };
+    });
   } catch (error) {
     console.error('Error generating AI response:', error);
-    throw new Error('Gagal menghasilkan jawaban. Silakan coba lagi nanti.');
+    return res.status(500).json({ error: 'Failed to generate response' });
   }
 }
 
@@ -93,37 +83,5 @@ function generateEnvironmentalTips(message: string): string[] {
       "Pisahkan sampah berdasarkan jenisnya untuk memudahkan daur ulang",
       "Edukasi orang lain tentang pentingnya pengelolaan sampah yang baik",
     ];
-  }
-}
-
-// Exported function to answer waste questions
-export async function answerWasteQuestion(input: AnswerWasteQuestionInput): Promise<AnswerWasteQuestionOutput> {
-  try {
-    const model = createChatSession();
-    
-    // Create prompt with the input data
-    const prompt = `You are EcoSage AI, a helpful assistant specializing in waste management and sustainability in Indonesia.
-The user has identified waste classified as '${input.wasteClassification}'.
-Please answer their question clearly and provide practical, actionable tips relevant to Indonesia where possible.
-
-User Question: ${input.question}
-
-Your Answer:`;
-
-    // Generate content using the Gemini model
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const textResponse = response.text();
-    
-    if (!textResponse) {
-      throw new Error('AI failed to generate an answer.');
-    }
-    
-    return {
-      answer: textResponse
-    };
-  } catch (error) {
-    console.error('Error generating AI response:', error);
-    throw new Error('Failed to generate an answer. Please try again later.');
   }
 }
