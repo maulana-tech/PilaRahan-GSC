@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { getAiChatResponse } from "@/lib/aiChat";
+
 import { cn } from "@/lib/utils";
 import { Bot, Loader2, Leaf } from "lucide-react";
 import { 
@@ -12,12 +12,14 @@ import {
 } from "@/components/ui/chat-interface";
 import { motion, AnimatePresence } from "framer-motion";
 import { NavbarWrapper } from "@/components/Navbar";
+import { getAiChatResponse, getEnvironmentalTips } from "@/lib/aiChat";
 
 interface Message {
   id: string;
   content: string;
   sender: "user" | "ai";
   timestamp: Date;
+  environmentalTips?: string[];
 }
 
 export default function AiChat() {
@@ -26,6 +28,7 @@ export default function AiChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -70,43 +73,76 @@ export default function AiChat() {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
+    setApiKeyError(null);
 
     try {
-      // Dapatkan respons dari AI
-      const response = await getAiChatResponse(content);
+      // Tambahkan logging untuk debugging
+      console.log("Mengirim permintaan ke Gemini API:", content);
       
-      // Format respons AI
-      let aiResponseContent = response.message;
+      // Dapatkan respons dari AI dengan timeout
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Permintaan timeout setelah 30 detik")), 30000)
+      );
       
-      // Tambahkan tips lingkungan jika ada
-      if (response.environmentalTips && response.environmentalTips.length > 0) {
-        aiResponseContent += "\n\nTips Lingkungan:\n";
-        response.environmentalTips.forEach((tip, index) => {
-          aiResponseContent += `${index + 1}. ${tip}\n`;
-        });
+      const responsePromise = getAiChatResponse(content);
+      const response = await Promise.race([responsePromise, timeoutPromise]);
+      
+      console.log("Respons dari Gemini API:", response);
+      
+      // Verifikasi bahwa respons valid
+      if (!response) {
+        throw new Error("Tidak ada respons dari AI");
       }
-
+      
+      // Dapatkan tips lingkungan berdasarkan konteks percakapan
+      let environmentalTips: string[] = [];
+      try {
+        environmentalTips = await getEnvironmentalTips(content);
+      } catch (error) {
+        console.error("Error saat mendapatkan tips lingkungan:", error);
+      }
+      
       // Tambahkan pesan AI ke daftar pesan
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: aiResponseContent,
+        content: response.toString(),
         sender: "ai",
         timestamp: new Date(),
+        environmentalTips: environmentalTips.length > 0 ? environmentalTips : undefined,
       };
 
       setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
-      console.error("Error getting AI response:", error);
+      console.error("Error detail:", error);
       
-      // Tambahkan pesan error
-      const errorMessage: Message = {
+      // Tambahkan pesan error yang lebih informatif
+      let errorMessage = "Kesalahan tidak diketahui";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        console.error("Stack trace:", error.stack);
+        
+        // Cek apakah error terkait dengan API key
+        if (errorMessage.includes("API key") || errorMessage.includes("authentication")) {
+          setApiKeyError("API key Gemini tidak valid atau tidak ditemukan. Pastikan VITE_GEMINI_API_KEY telah diatur dengan benar di file .env");
+        }
+      }
+      
+      // Cek apakah error terkait dengan koneksi
+      const isConnectionError = errorMessage.includes("network") || 
+                               errorMessage.includes("connection") ||
+                               errorMessage.includes("timeout");
+      
+      const errorResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Maaf, terjadi kesalahan saat memproses permintaan Anda. Silakan coba lagi nanti.",
+        content: isConnectionError 
+          ? `Maaf, terjadi masalah koneksi saat menghubungi layanan Gemini AI. Silakan periksa koneksi internet Anda dan coba lagi.`
+          : `Maaf, terjadi kesalahan saat memproses permintaan Anda: ${errorMessage}. Silakan coba lagi nanti.`,
         sender: "ai",
         timestamp: new Date(),
       };
 
-      setMessages((prev) => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorResponse]);
     } finally {
       setIsLoading(false);
     }
@@ -133,6 +169,13 @@ export default function AiChat() {
       
       {/* Container utama dengan padding top untuk memberikan ruang pada navbar */}
       <div className="flex-1 container max-w-4xl mx-auto px-4 pt-20 pb-4">
+        {apiKeyError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            <p className="font-bold">Error API Key</p>
+            <p>{apiKeyError}</p>
+          </div>
+        )}
+        
         <ChatInterface
           onSendMessage={handleSendMessage}
           inputValue={inputValue}
@@ -183,6 +226,22 @@ export default function AiChat() {
                           </span>
                         </div>
                         <div className="whitespace-pre-line">{message.content}</div>
+                        
+                        {/* Tampilkan tips lingkungan jika ada */}
+                        {message.sender === "ai" && message.environmentalTips && message.environmentalTips.length > 0 && (
+                          <div className="mt-4 pt-3 border-t border-primary/20">
+                            <p className="font-medium text-sm text-primary mb-2">Tips Lingkungan:</p>
+                            <ul className="space-y-1">
+                              {message.environmentalTips.map((tip, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm">
+                                  <Leaf className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                  <span>{tip}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
                         {message.sender === "ai" && <FeedbackButtons messageId={message.id} />}
                       </div>
                     </motion.div>
