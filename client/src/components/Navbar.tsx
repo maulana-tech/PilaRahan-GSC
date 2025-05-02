@@ -41,7 +41,7 @@ export function NavbarWrapper() {
       <div className="fixed top-4 left-6 z-50">
         <div className="flex items-center">
           <img
-            src="/logo.png"
+            src="/src/data/picture/Pilarahan.png"
             alt="PilaRahan Logo"
             className="h-10 w-10 mr-2"
           />

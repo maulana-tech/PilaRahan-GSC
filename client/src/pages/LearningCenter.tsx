@@ -107,7 +107,7 @@ export default function LearningCenter() {
             <ProductItem
               title="Komposter Rumahan"
               href="/produk/komposter"
-              src="https://images.unsplash.com/photo-1582560475093-ba66accbc095?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
+              src="https://images.unsplash.com/photo-1530587191325-3db32d826c18?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
               description="Solusi pengomposan praktis untuk rumah tangga."
             />
             <ProductItem

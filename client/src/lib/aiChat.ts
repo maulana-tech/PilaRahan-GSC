@@ -1,22 +1,35 @@
-import { apiRequest } from "./queryClient";
+import { generateGeminiResponse } from "./gemini";
 
-export interface AiChatResponse {
-  message: string;
-  environmentalTips: string[];
+// Fungsi untuk mendapatkan respons dari AI
+export async function getAiChatResponse(message: string): Promise<string> {
+  try {
+    // Tambahkan konteks tentang PilaRahan ke prompt
+    const enhancedPrompt = `Sebagai asisten AI PilaRahan yang fokus pada pengelolaan sampah dan lingkungan, tolong bantu menjawab pertanyaan berikut dengan informasi yang akurat dan bermanfaat: ${message}`;
+    
+    // Gunakan Gemini API untuk mendapatkan respons
+    const response = await generateGeminiResponse(enhancedPrompt);
+    return response;
+  } catch (error) {
+    console.error("Error saat mendapatkan respons AI:", error);
+    throw error;
+  }
 }
 
-export async function getAiChatResponse(
-  message: string
-): Promise<AiChatResponse> {
+// Fungsi untuk mendapatkan tips lingkungan berdasarkan konteks percakapan
+export async function getEnvironmentalTips(context: string): Promise<string[]> {
   try {
-    const response = await apiRequest("POST", "/api/ai-chat", {
-      message,
-    });
+    const prompt = `Berdasarkan konteks percakapan berikut: "${context}", berikan 3 tips praktis tentang pengelolaan sampah atau pelestarian lingkungan yang relevan. Berikan hanya daftar tips tanpa penjelasan tambahan.`;
     
-    const data = await response.json();
-    return data;
+    const response = await generateGeminiResponse(prompt);
+    
+    // Parsing respons menjadi array tips
+    const tips = response
+      .split(/\d+\.\s+/) // Split berdasarkan pola "1. ", "2. ", dll.
+      .filter(tip => tip.trim().length > 0);
+    
+    return tips;
   } catch (error) {
-    console.error("Error fetching AI chat response:", error);
-    throw new Error("Gagal mendapatkan respons dari AI. Silakan coba lagi.");
+    console.error("Error saat mendapatkan tips lingkungan:", error);
+    return [];
   }
 }

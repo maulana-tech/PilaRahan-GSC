@@ -7,9 +7,9 @@ export default function HeroSection() {
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <img
-            src="/logo.png"
+            src="/src/data/picture/Pilarahan.png"
             alt="PilaRahan Logo"
-            className="w-16 h-16 mx-auto mb-6"
+            className="w-24 h-24 mx-auto mb-6"
           />
         </div>
         <h1

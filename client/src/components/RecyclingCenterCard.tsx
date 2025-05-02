@@ -32,7 +32,7 @@ export default function RecyclingCenterCard({
     >
       <div className="flex justify-between">
         <h4 className="font-bold text-text">{name}</h4>
-        <span className="text-sm text-gray-500">{distance.toFixed(1)} mi</span>
+        <span className="text-sm text-gray-500">{distance.toFixed(1)} km</span>
       </div>
       <p className="text-sm text-gray-600 mb-2">{address}</p>
       <div className="flex items-center text-sm flex-wrap gap-1">
