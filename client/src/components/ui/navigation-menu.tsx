@@ -1,8 +1,9 @@
 "use client";
-import React, { useState } from "react";
-import { motion } from "motion/react";
-import { Menu as MenuIcon, X } from "lucide-react";
+import React, { useState, useCallback, memo } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Menu as MenuIcon, X, ChevronDown } from "lucide-react";
 
+// Konstanta untuk transisi yang digunakan di beberapa komponen
 const transition = {
   type: "spring",
   mass: 0.5,
@@ -12,7 +13,8 @@ const transition = {
   restSpeed: 0.001,
 };
 
-export const MenuItem = ({
+// Menggunakan memo untuk mencegah render ulang yang tidak perlu
+export const MenuItem = memo(({
   setActive,
   active,
   item,
@@ -23,21 +25,27 @@ export const MenuItem = ({
   item: string;
   children?: React.ReactNode;
 }) => {
+  // Menggunakan useCallback untuk fungsi event handler
+  const handleMouseEnter = useCallback(() => {
+    setActive(item);
+  }, [setActive, item]);
+
   return (
-    <div onMouseEnter={() => setActive(item)} className="relative">
+    <div onMouseEnter={handleMouseEnter} className="relative">
       <motion.p
         transition={{ duration: 0.3 }}
         className="cursor-pointer font-medium text-emerald-800 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300"
       >
         {item}
       </motion.p>
-      {active !== null && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={transition}
-        >
-          {active === item && (
+      <AnimatePresence>
+        {active !== null && active === item && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 10 }}
+            transition={transition}
+          >
             <div className="absolute top-[calc(100%_+_1.2rem)] left-1/2 transform -translate-x-1/2 pt-4">
               <motion.div
                 transition={transition}
@@ -52,31 +60,48 @@ export const MenuItem = ({
                 </motion.div>
               </motion.div>
             </div>
-          )}
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
-};
+});
 
-export const Menu = ({
+// Nama tampilan untuk debugging
+MenuItem.displayName = "MenuItem";
+
+// Menggunakan memo untuk Menu
+export const Menu = memo(({
   setActive,
   children,
 }: {
   setActive: (item: string | null) => void;
   children: React.ReactNode;
 }) => {
+  // Menggunakan useCallback untuk fungsi event handler
+  const handleMouseLeave = useCallback(() => {
+    setActive(null);
+  }, [setActive]);
+
   return (
     <nav
+<<<<<<< HEAD
       onMouseLeave={() => setActive(null)}
       className="relative rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-white/90 dark:bg-emerald-950/90 backdrop-blur-sm shadow-md shadow-emerald-100/20 dark:shadow-emerald-900/30 flex justify-center space-x-6 px-8 py-4"
+=======
+      onMouseLeave={handleMouseLeave}
+      className="relative rounded-full border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 flex justify-center space-x-6 px-8 py-4"
+>>>>>>> 16f052433d5fcf715e3beb587f8e794861f0a0d8
     >
       {children}
     </nav>
   );
-};
+});
 
-export const ProductItem = ({
+Menu.displayName = "Menu";
+
+// Menggunakan memo untuk ProductItem
+export const ProductItem = memo(({
   title,
   description,
   href,
@@ -95,6 +120,7 @@ export const ProductItem = ({
         height={70}
         alt={title}
         className="shrink-0 rounded-md shadow-md transition-transform group-hover:scale-105"
+        loading="lazy" // Menambahkan lazy loading untuk gambar
       />
       <div>
         <h4 className="text-xl font-bold mb-1 text-emerald-800 dark:text-emerald-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors">
@@ -106,9 +132,12 @@ export const ProductItem = ({
       </div>
     </a>
   );
-};
+});
 
-export const HoveredLink = ({ children, ...rest }: any) => {
+ProductItem.displayName = "ProductItem";
+
+// Menggunakan memo untuk HoveredLink
+export const HoveredLink = memo(({ children, ...rest }: any) => {
   return (
     <a
       {...rest}
@@ -117,10 +146,12 @@ export const HoveredLink = ({ children, ...rest }: any) => {
       {children}
     </a>
   );
-};
+});
 
-// Komponen MobileMenu baru
-export const MobileMenu = ({
+HoveredLink.displayName = "HoveredLink";
+
+// Komponen MobileMenu dengan optimasi
+export const MobileMenu = memo(({
   isOpen,
   setIsOpen,
   children,
@@ -129,25 +160,32 @@ export const MobileMenu = ({
   setIsOpen: (isOpen: boolean) => void;
   children: React.ReactNode;
 }) => {
-  // Fungsi untuk menangani swipe down
-  const handleDragEnd = (event: any, info: any) => {
+  // Menggunakan useCallback untuk fungsi event handler
+  const handleDragEnd = useCallback((event: any, info: any) => {
     if (info.offset.y > 50) {
       setIsOpen(false);
     }
-  };
+  }, [setIsOpen]);
+
+  const handleOverlayClick = useCallback(() => {
+    setIsOpen(false);
+  }, [setIsOpen]);
 
   return (
     <>
-      {/* Overlay latar belakang */}
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {/* Overlay latar belakang */}
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.5 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black z-40 border-4 border-emerald-500/30 backdrop-blur-sm"
+            onClick={handleOverlayClick}
+          />
+        )}
+      </AnimatePresence>
       
       {/* Menu mobile yang muncul dari bawah */}
       <motion.div
@@ -172,10 +210,12 @@ export const MobileMenu = ({
       </motion.div>
     </>
   );
-};
+});
 
-// Komponen MobileMenuItem untuk menu mobile
-export const MobileMenuItem = ({
+MobileMenu.displayName = "MobileMenu";
+
+// Komponen MobileMenuItem dengan optimasi
+export const MobileMenuItem = memo(({
   href,
   children,
   onClick,
@@ -188,7 +228,7 @@ export const MobileMenuItem = ({
     return (
       <a
         href={href}
-        className="block py-4 border-b border-emerald-100 dark:border-emerald-800 text-emerald-800 dark:text-emerald-400 font-medium text-lg"
+        className="block py-4 border-b border-emerald-100 dark:border-emerald-800 text-emerald-800 dark:text-emerald-400 font-medium text-lg transition-colors hover:text-emerald-600 dark:hover:text-emerald-300"
         onClick={onClick}
       >
         {children}
@@ -201,10 +241,12 @@ export const MobileMenuItem = ({
       {children}
     </div>
   );
-};
+});
 
-// Komponen MobileSubmenu untuk submenu pada menu mobile
-export const MobileSubmenu = ({
+MobileMenuItem.displayName = "MobileMenuItem";
+
+// Komponen MobileSubmenu dengan optimasi
+export const MobileSubmenu = memo(({
   title,
   children,
 }: {
@@ -213,30 +255,22 @@ export const MobileSubmenu = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   
+  const handleToggle = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+
   return (
     <div className="border-b border-emerald-100 dark:border-emerald-800">
       <div 
-        className="flex justify-between items-center py-4 text-emerald-800 dark:text-emerald-400 font-medium text-lg"
-        onClick={() => setIsOpen(!isOpen)}
+        className="flex justify-between items-center py-4 text-emerald-800 dark:text-emerald-400 font-medium text-lg cursor-pointer transition-colors hover:text-emerald-600 dark:hover:text-emerald-300"
+        onClick={handleToggle}
       >
         <span>{title}</span>
         <motion.div
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
-            strokeLinejoin="round"
-          >
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+          <ChevronDown className="h-5 w-5" />
         </motion.div>
       </div>
       
@@ -255,4 +289,6 @@ export const MobileSubmenu = ({
       </motion.div>
     </div>
   );
-};
+});
+
+MobileSubmenu.displayName = "MobileSubmenu";

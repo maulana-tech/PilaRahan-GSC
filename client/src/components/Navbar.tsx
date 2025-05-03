@@ -37,34 +37,75 @@ export function NavbarWrapper() {
   }, [isMenuOpen]);
 
   return (
-    <div className="relative w-full  flex items-center justify-center">
-      <div className="fixed top-4 left-6 z-50">
-        <div className="flex items-center">
-          <img
-            src="/src/data/picture/Pilarahan.png"
-            alt="PilaRahan Logo"
-            className="h-10 w-10 mr-2"
-          />
-          <span className="text-emerald-800 dark:text-emerald-400 font-medium text-lg">
-            PilaRahan
-          </span>
-        </div>
-      </div>
-
-      {/* Tombol hamburger untuk mobile */}
+    <>
+      {/* Tampilan Mobile */}
       {isMobile && (
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="fixed top-4 right-6 z-50 p-2 rounded-full bg-white/90 dark:bg-emerald-950/90 shadow-md"
-        >
-          {isMenuOpen ? (
-            <X className="h-6 w-6 text-emerald-800 dark:text-emerald-400" />
-          ) : (
-            <MenuIcon className="h-6 w-6 text-emerald-800 dark:text-emerald-400" />
-          )}
-        </button>
+        <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
+          <div className="flex items-center justify-between w-full bg-white/90 dark:bg-emerald-950/90 backdrop-blur-md rounded-full border border-emerald-200 dark:border-emerald-800 shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 px-4 py-2 transition-all duration-300 hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/60">
+            {/* Logo */}
+            <a href="/" className="flex items-center group">
+              <div className="relative overflow-hidden rounded-full p-1 bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 transition-transform duration-300 group-hover:scale-105">
+                <img
+                  src="/src/data/picture/Pilarahan.png"
+                  alt="PilaRahan Logo"
+                  className="h-8 w-8"
+                />
+              </div>
+              <span className="ml-2 text-emerald-800 dark:text-emerald-400 font-medium text-lg transition-colors duration-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
+                PilaRahan
+              </span>
+            </a>
+            
+            {/* Hamburger Menu Button */}
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)} 
+              className="p-2 rounded-full bg-emerald-50 dark:bg-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm"
+              aria-label="Menu"
+            >
+              {isMenuOpen ? (
+                <X className="h-6 w-6 text-emerald-800 dark:text-emerald-400" />
+              ) : (
+                <MenuIcon className="h-6 w-6 text-emerald-800 dark:text-emerald-400" />
+              )}
+            </button>
+          </div>
+          
+          {/* Menu mobile */}
+          <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen}>
+            <MobileMenuItem href="/" onClick={() => setIsMenuOpen(false)}>
+              Home
+            </MobileMenuItem>
+            <MobileMenuItem href="/scan" onClick={() => setIsMenuOpen(false)}>
+              Scan
+            </MobileMenuItem>
+            <MobileSubmenu title="Layanan">
+              <MobileMenuItem
+                href="/learning"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Learning
+              </MobileMenuItem>
+              <MobileMenuItem
+                href="/learning-center"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Edukasi
+              </MobileMenuItem>
+            </MobileSubmenu>
+            <MobileMenuItem
+              href="/recycling-centers"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Recycle center
+            </MobileMenuItem>
+            <MobileMenuItem href="/ai-chat" onClick={() => setIsMenuOpen(false)}>
+              AI Assistant
+            </MobileMenuItem>
+          </MobileMenu>
+        </div>
       )}
 
+<<<<<<< HEAD
       {/* Menu desktop */}
       <div className="items-center justify-center w-full">
       {!isMobile && <Navbar className="top-2" />}
@@ -104,17 +145,43 @@ export function NavbarWrapper() {
             AI Assistant
           </MobileMenuItem>
         </MobileMenu>
+=======
+      {/* Tampilan Desktop */}
+      {!isMobile && (
+        <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+          {/* Logo untuk desktop - posisi absolute */}
+          <div className="absolute top-4 left-6 z-50">
+            <a href="/" className="flex items-center group">
+              <div className="relative overflow-hidden rounded-full p-1.5 bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 transition-transform duration-300 group-hover:scale-105 shadow-md">
+                <img
+                  src="/src/data/picture/Pilarahan.png"
+                  alt="PilaRahan Logo"
+                  className="h-10 w-10"
+                />
+              </div>
+              <span className="ml-3 text-emerald-800 dark:text-emerald-400 font-medium text-xl transition-colors duration-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
+                PilaRahan
+              </span>
+            </a>
+          </div>
+          
+          {/* Menu desktop - posisi tengah */}
+          <div className="flex justify-center">
+            <DesktopNavbar />
+          </div>
+        </div>
+>>>>>>> 16f052433d5fcf715e3beb587f8e794861f0a0d8
       )}
-    </div>
+    </>
   );
 }
 
-function Navbar({ className }: { className?: string }) {
+// Komponen navbar desktop yang dipisahkan
+function DesktopNavbar() {
   const [active, setActive] = useState<string | null>(null);
+  
   return (
-    <div
-      className={cn("fixed top-10 inset-x-0 max-w-2xl mx-auto z-50", className)}
-    >
+    <div className="z-50">
       <Menu setActive={setActive}>
         <div className="cursor-pointer">
           <a
