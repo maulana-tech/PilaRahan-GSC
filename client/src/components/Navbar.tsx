@@ -105,47 +105,6 @@ export function NavbarWrapper() {
         </div>
       )}
 
-<<<<<<< HEAD
-      {/* Menu desktop */}
-      <div className="items-center justify-center w-full">
-      {!isMobile && <Navbar className="top-2" />}
-      </div>
-      
-
-      {/* Menu mobile */}
-      {isMobile && (
-        <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen}>
-          <MobileMenuItem href="/" onClick={() => setIsMenuOpen(false)}>
-            Home
-          </MobileMenuItem>
-          <MobileMenuItem href="/scan" onClick={() => setIsMenuOpen(false)}>
-            Scan
-          </MobileMenuItem>
-          <MobileSubmenu title="Layanan">
-            <MobileMenuItem
-              href="/learning"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Learning
-            </MobileMenuItem>
-            <MobileMenuItem
-              href="/learning-center"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Edukasi
-            </MobileMenuItem>
-          </MobileSubmenu>
-          <MobileMenuItem
-            href="/recycling-centers"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Recycle center
-          </MobileMenuItem>
-          <MobileMenuItem href="/ai-chat" onClick={() => setIsMenuOpen(false)}>
-            AI Assistant
-          </MobileMenuItem>
-        </MobileMenu>
-=======
       {/* Tampilan Desktop */}
       {!isMobile && (
         <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
@@ -170,7 +129,6 @@ export function NavbarWrapper() {
             <DesktopNavbar />
           </div>
         </div>
->>>>>>> 16f052433d5fcf715e3beb587f8e794861f0a0d8
       )}
     </>
   );

@@ -85,13 +85,8 @@ export const Menu = memo(({
 
   return (
     <nav
-<<<<<<< HEAD
-      onMouseLeave={() => setActive(null)}
-      className="relative rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-white/90 dark:bg-emerald-950/90 backdrop-blur-sm shadow-md shadow-emerald-100/20 dark:shadow-emerald-900/30 flex justify-center space-x-6 px-8 py-4"
-=======
       onMouseLeave={handleMouseLeave}
-      className="relative rounded-full border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 flex justify-center space-x-6 px-8 py-4"
->>>>>>> 16f052433d5fcf715e3beb587f8e794861f0a0d8
+      className="relative rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 flex justify-center space-x-6 px-8 py-4"
     >
       {children}
     </nav>
