@@ -66,7 +66,10 @@ export function NavbarWrapper() {
       )}
 
       {/* Menu desktop */}
+      <div className="items-center justify-center w-full">
       {!isMobile && <Navbar className="top-2" />}
+      </div>
+      
 
       {/* Menu mobile */}
       {isMobile && (
