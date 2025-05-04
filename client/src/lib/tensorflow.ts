@@ -1,9 +1,10 @@
 import * as tf from "@tensorflow/tfjs";
-import { classifyWasteType } from "./utils";
 
-// Model URL for a waste classifier model using a more reliable CDN
-const WASTE_CLASSIFIER_MODEL_URL =
-  "https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json";
+// Menggunakan model lokal dari direktori data/model
+const WASTE_CLASSIFIER_MODEL_URL = "../data/model/model.json";
+
+// Kategori sampah yang dikenali model
+const WASTE_CATEGORIES = ["Plastic", "Paper", "Glass", "Metal", "Organic", "Electronic"];
 
 export interface ClassificationResult {
   type: string;
@@ -13,33 +14,34 @@ export interface ClassificationResult {
   materialComposition?: string[];
   recyclabilityScore: number; // Scale of 0-100
   recyclabilityDetails: string;
+  category: string; // Kategori utama: "Organik" atau "Recycle"
 }
 
-let wasteModel: tf.GraphModel | null = null;
+let wasteModel: tf.LayersModel | null = null;
 
-export async function loadModel(): Promise<tf.GraphModel> {
+export async function loadModel(): Promise<tf.LayersModel> {
   if (wasteModel) return wasteModel;
 
   try {
-    // Loading indicator for UI feedback
+    // Indikator loading untuk UI feedback
     const loadingProgress = (fraction: number) => {
       console.log(`Model loading: ${Math.floor(fraction * 100)}%`);
     };
     
-    // Load the model with loading progress and timeout
-    const modelPromise = tf.loadGraphModel(WASTE_CLASSIFIER_MODEL_URL, { 
+    // Load model dengan progress loading dan timeout
+    const modelPromise = tf.loadLayersModel(WASTE_CLASSIFIER_MODEL_URL, { 
       onProgress: loadingProgress,
     });
     
-    // Set a timeout of 30 seconds
+    // Set timeout 30 detik
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error("Model loading timed out")), 30000);
     });
     
-    // Race between model loading and timeout
-    wasteModel = await Promise.race([modelPromise, timeoutPromise]) as tf.GraphModel;
+    // Race antara loading model dan timeout
+    wasteModel = await Promise.race([modelPromise, timeoutPromise]) as tf.LayersModel;
     
-    // Warm up the model with a dummy tensor
+    // Pemanasan model dengan tensor dummy
     const dummyTensor = tf.zeros([1, 224, 224, 3]);
     await wasteModel.predict(dummyTensor);
     tf.dispose(dummyTensor);
@@ -48,42 +50,164 @@ export async function loadModel(): Promise<tf.GraphModel> {
     return wasteModel;
   } catch (error) {
     console.error("Failed to load the waste classification model:", error);
-    // Fall back to simulation mode
+    // Fallback ke mode simulasi
     throw new Error("Failed to load model");
   }
 }
 
 export async function preprocessImage(imageElement: HTMLImageElement): Promise<tf.Tensor4D> {
-  // Enhanced preprocessing pipeline to improve classification accuracy
   return tf.tidy(() => {
-    // Convert the image to a tensor
-    const imageTensor = tf.browser.fromPixels(imageElement);
-    
-    // Apply image contrast enhancement for better feature extraction
-    const normalized = tf.div(imageTensor, 255);
-    const enhanced = tf.mul(tf.sub(normalized, 0.5), 2.0) as tf.Tensor3D;
-    
-    // Resize the image to 224x224 (model input size)
-    const resizedImage = tf.image.resizeBilinear(enhanced, [224, 224]);
-    
-    // Normalize pixel values to the range [-1, 1]
-    const normalizedImage = tf.sub(tf.div(resizedImage, 127.5), 1);
-    
-    // Add batch dimension [1, 224, 224, 3]
-    return normalizedImage.expandDims(0) as tf.Tensor4D;
+    let imageTensor = tf.browser.fromPixels(imageElement); // RGB [0, 255]
+    imageTensor = tf.image.resizeBilinear(imageTensor, [224, 224]);
+
+    // Konversi ke float32
+    const floatTensor = imageTensor.toFloat();
+
+    // Urutan channel RGB ke BGR
+    const bgrTensor = tf.reverse(floatTensor, -1); 
+
+    // Mean subtraction (ImageNet means for BGR)
+    const imagenetMeans = tf.tensor1d([103.939, 116.779, 123.68]);
+    const processedTensor = bgrTensor.sub(imagenetMeans);
+
+    // Tambahkan batch dimensi
+    return processedTensor.expandDims(0) as tf.Tensor4D;
   });
 }
 
-// Function to generate simulated classification results
+export async function classifyImage(imageElement: HTMLImageElement): Promise<ClassificationResult> {
+  try {
+    const model = await loadModel();
+    const preprocessedImage = await preprocessImage(imageElement);
+
+    // Pastikan output softmax
+    const predictions = model.predict(preprocessedImage) as tf.Tensor;
+    const probabilities = await predictions.softmax().data();
+
+    tf.dispose([preprocessedImage, predictions]);
+
+    // Cari index probabilitas tertinggi
+    let maxProbIndex = 0;
+    let maxProb = probabilities[0];
+    for (let i = 1; i < probabilities.length; i++) {
+      if (probabilities[i] > maxProb) {
+        maxProb = probabilities[i];
+        maxProbIndex = i;
+      }
+    }
+
+    const type = WASTE_CATEGORIES[maxProbIndex] || "Unknown";
+    const confidence = maxProb;
+    
+    // Tentukan apakah sampah dapat didaur ulang berdasarkan tipenya
+    const recyclableTypes = ["Plastic", "Paper", "Glass", "Metal"];
+    const compostableTypes = ["Organic"];
+    const specialHandlingTypes = ["Electronic"];
+    
+    const isRecyclable = recyclableTypes.includes(type);
+    
+    // Tentukan kategori utama: Organik atau Recycle
+    let category = "Unknown";
+    if (compostableTypes.includes(type)) {
+      category = "Organik";
+    } else if (recyclableTypes.includes(type) || specialHandlingTypes.includes(type)) {
+      category = "Recycle";
+    }
+    
+    // Material properties berdasarkan tipe
+    const materialPropertiesMap: Record<string, string[]> = {
+      "Plastic": ["Berbasis polimer", "Turunan petroleum", "Non-biodegradable", "Ringan"],
+      "Paper": ["Serat selulosa", "Biodegradable", "Pulp daur ulang", "Berbasis tanaman"],
+      "Glass": ["Berbasis silika", "Material inert", "Dapat didaur ulang tanpa batas", "Tahan panas"],
+      "Metal": ["Konduktif", "Dapat ditempa", "Nilai daur ulang tinggi", "Komposisi elemental"],
+      "Organic": ["Biodegradable", "Dapat dikompos", "Kaya karbon", "Material alami"],
+      "Electronic": ["Papan sirkuit", "Material campuran", "Mengandung elemen langka", "Rakitan kompleks"],
+    };
+    
+    // Hitung skor daur ulang berdasarkan tipe dan kepercayaan
+    let recyclabilityBase = 0;
+    
+    if (isRecyclable) {
+      // Item yang dapat didaur ulang mendapat skor tinggi berdasarkan kepercayaan
+      recyclabilityBase = Math.round(confidence * 100);
+      // Kertas memiliki daur ulang sedikit lebih rendah karena masalah kontaminasi
+      if (type === "Paper") recyclabilityBase -= 5;
+      // Kaca dan logam memiliki daur ulang tertinggi
+      if (type === "Glass" || type === "Metal") recyclabilityBase += 5;
+    } else if (compostableTypes.includes(type)) {
+      // Material organik sangat dapat dikompos
+      recyclabilityBase = 85;
+    } else if (specialHandlingTypes.includes(type)) {
+      // Elektronik memerlukan daur ulang khusus
+      recyclabilityBase = 70;
+    } else {
+      // Item lain memiliki daur ulang rendah
+      recyclabilityBase = 30;
+    }
+    
+    // Batasi skor daur ulang pada 98
+    const recyclabilityScore = Math.min(98, recyclabilityBase);
+    
+    // Hasilkan informasi daur ulang terperinci
+    let recyclabilityDetails = "";
+    if (recyclabilityScore > 90) {
+      recyclabilityDetails = "Sangat dapat didaur ulang dengan proses standar";
+    } else if (recyclabilityScore > 70) {
+      recyclabilityDetails = "Dapat didaur ulang tetapi mungkin memerlukan penanganan khusus";
+    } else if (recyclabilityScore > 50) {
+      recyclabilityDetails = "Daur ulang terbatas - periksa pedoman lokal";
+    } else {
+      recyclabilityDetails = "Sulit didaur ulang dengan metode standar";
+    }
+    
+    // Instruksi pembuangan yang lebih terperinci berdasarkan jenis sampah
+    let disposalMethod = "";
+    if (isRecyclable) {
+      if (type === "Plastic") {
+        disposalMethod = "Bersihkan secara menyeluruh, periksa kode daur ulang di bagian bawah, tempatkan di tempat sampah daur ulang plastik. Lepaskan tutup dan label jika diperlukan oleh pedoman lokal.";
+      } else if (type === "Paper") {
+        disposalMethod = "Jaga agar tetap kering dan bersih, lepaskan lampiran plastik atau logam, tempatkan di tempat sampah daur ulang kertas. Hancurkan dokumen sensitif terlebih dahulu.";
+      } else if (type === "Glass") {
+        disposalMethod = "Bilas secara menyeluruh, lepaskan tutup dan penutup, tempatkan di tempat sampah daur ulang kaca. Berhati-hatilah dengan kaca pecah dan pisahkan berdasarkan warna jika diperlukan secara lokal.";
+      } else if (type === "Metal") {
+        disposalMethod = "Bersihkan secara menyeluruh, lepaskan komponen non-logam, tempatkan di tempat sampah daur ulang logam. Hancurkan kaleng aluminium untuk menghemat ruang jika memungkinkan.";
+      }
+    } else if (type === "Organic") {
+      disposalMethod = "Tempatkan di kompos rumah atau pengumpulan limbah hijau. Hindari memasukkan daging/susu dalam sistem kompos rumah. Pertimbangkan kompos cacing untuk pemecahan yang lebih cepat.";
+    } else if (type === "Electronic") {
+      disposalMethod = "Bawa ke pusat pengumpulan e-waste yang ditunjuk atau program daur ulang pengecer. Jangan pernah menempatkan di tempat sampah biasa karena bahan berbahaya.";
+    } else {
+      disposalMethod = "Periksa pedoman otoritas limbah lokal untuk metode pembuangan yang tepat.";
+    }
+    
+    return {
+      type,
+      confidence,
+      isRecyclable,
+      disposalMethod,
+      materialComposition: materialPropertiesMap[type] || [],
+      recyclabilityScore,
+      recyclabilityDetails,
+      category
+    };
+  } catch (error) {
+    console.error("Classification error:", error);
+    console.log("Falling back to simulated classification due to error");
+    
+    // Fallback ke klasifikasi simulasi jika model gagal
+    return generateSimulatedClassification(imageElement);
+  }
+}
+
+// Fungsi untuk menghasilkan hasil klasifikasi simulasi
 function generateSimulatedClassification(imageElement: HTMLImageElement): ClassificationResult {
-  // Use image characteristics to determine pseudo-random but deterministic waste type
-  // This creates an illusion of actual classification without a real model
+  // Gunakan karakteristik gambar untuk menentukan jenis sampah pseudo-random tetapi deterministik
   const imageData = analyzeImageForSimulation(imageElement);
   
-  // To distinguish recyclable vs organic waste better, we'll use color characteristics
-  // Greener/brownish images are more likely to be organic, colorful plastics or clear glass are recyclable
+  // Untuk membedakan sampah daur ulang vs organik dengan lebih baik, kita akan menggunakan karakteristik warna
+  // Gambar yang lebih hijau/kecoklatan lebih mungkin organik, plastik berwarna atau kaca bening dapat didaur ulang
   
-  // Predisposition towards certain types based on image characteristics
+  // Kecenderungan terhadap jenis tertentu berdasarkan karakteristik gambar
   let typeWeights = {
     "Plastic": imageData.colorfulness * 1.5 + imageData.sharpness * 0.5,
     "Paper": (1 - imageData.colorfulness) * 0.8 + imageData.brightness * 0.7,
@@ -93,9 +217,9 @@ function generateSimulatedClassification(imageElement: HTMLImageElement): Classi
     "Electronic": imageData.complexity * 1.5 + imageData.sharpness * 0.5,
   };
   
-  // Find the type with the highest weight
+  // Temukan jenis dengan bobot tertinggi
   let highestWeight = 0;
-  let selectedType = "Organic"; // Default to organic if all else fails
+  let selectedType = "Organic"; // Default ke organik jika semua gagal
   
   for (const [type, weight] of Object.entries(typeWeights)) {
     if (weight > highestWeight) {
@@ -106,8 +230,8 @@ function generateSimulatedClassification(imageElement: HTMLImageElement): Classi
   
   const type = selectedType;
   
-  // Make organic vs recyclable distinction more pronounced
-  // Make confidence inversely proportional to how close the next highest weight is
+  // Buat perbedaan organik vs daur ulang lebih jelas
+  // Buat kepercayaan berbanding terbalik dengan seberapa dekat bobot tertinggi berikutnya
   let secondHighestWeight = 0;
   
   for (const [t, weight] of Object.entries(typeWeights)) {
@@ -116,83 +240,91 @@ function generateSimulatedClassification(imageElement: HTMLImageElement): Classi
     }
   }
   
-  // Confidence based on how clear the distinction is
+  // Kepercayaan berdasarkan seberapa jelas perbedaannya
   const weightDifference = highestWeight - secondHighestWeight;
   const confidenceBase = Math.min(0.95, Math.max(0.7, 0.7 + weightDifference));
-  const confidenceBoost = Math.random() * 0.1; // Small random boost for realism
+  const confidenceBoost = Math.random() * 0.1; // Boost acak kecil untuk realisme
   const confidence = Math.min(0.98, confidenceBase + confidenceBoost);
   
-  // Set recyclability based on waste type
+  // Tetapkan daur ulang berdasarkan jenis sampah
   const recyclableTypes = ["Plastic", "Paper", "Glass", "Metal"];
   const compostableTypes = ["Organic"];
   const specialHandlingTypes = ["Electronic"];
   
   const isRecyclable = recyclableTypes.includes(type);
   
-  // Material properties based on type - enhanced descriptions
+  // Tentukan kategori utama: Organik atau Recycle
+  let category = "Unknown";
+  if (compostableTypes.includes(type)) {
+    category = "Organik";
+  } else if (recyclableTypes.includes(type) || specialHandlingTypes.includes(type)) {
+    category = "Recycle";
+  }
+  
+  // Properti material berdasarkan tipe - deskripsi yang ditingkatkan
   const materialPropertiesMap: Record<string, string[]> = {
-    "Plastic": ["Polymer-based", "Petroleum derivative", "Non-biodegradable", "Lightweight"],
-    "Paper": ["Cellulose fibers", "Biodegradable", "Recyclable pulp", "Plant-based"],
-    "Glass": ["Silica-based", "Inert material", "Indefinitely recyclable", "Heat resistant"],
-    "Metal": ["Conductive", "Malleable", "High recyclability value", "Elemental composition"],
-    "Organic": ["Biodegradable", "Compostable", "Carbon-rich", "Natural materials"],
-    "Electronic": ["Circuit boards", "Mixed materials", "Contains rare elements", "Complex assemblies"],
+    "Plastic": ["Berbasis polimer", "Turunan petroleum", "Non-biodegradable", "Ringan"],
+    "Paper": ["Serat selulosa", "Biodegradable", "Pulp daur ulang", "Berbasis tanaman"],
+    "Glass": ["Berbasis silika", "Material inert", "Dapat didaur ulang tanpa batas", "Tahan panas"],
+    "Metal": ["Konduktif", "Dapat ditempa", "Nilai daur ulang tinggi", "Komposisi elemental"],
+    "Organic": ["Biodegradable", "Dapat dikompos", "Kaya karbon", "Material alami"],
+    "Electronic": ["Papan sirkuit", "Material campuran", "Mengandung elemen langka", "Rakitan kompleks"],
   };
   
-  // Calculate recyclability score based on type, confidence, and additional factors
+  // Hitung skor daur ulang berdasarkan tipe, kepercayaan, dan faktor tambahan
   let recyclabilityBase = 0;
   
   if (isRecyclable) {
-    // Recyclable items get high score based on confidence
+    // Item yang dapat didaur ulang mendapat skor tinggi berdasarkan kepercayaan
     recyclabilityBase = Math.round(confidence * 100);
-    // Paper has slightly lower recyclability due to contamination issues
+    // Kertas memiliki daur ulang sedikit lebih rendah karena masalah kontaminasi
     if (type === "Paper") recyclabilityBase -= 5;
-    // Glass and metal have highest recyclability
+    // Kaca dan logam memiliki daur ulang tertinggi
     if (type === "Glass" || type === "Metal") recyclabilityBase += 5;
   } else if (compostableTypes.includes(type)) {
-    // Organic materials are highly compostable
+    // Material organik sangat dapat dikompos
     recyclabilityBase = 85;
   } else if (specialHandlingTypes.includes(type)) {
-    // Electronics require special recycling
+    // Elektronik memerlukan daur ulang khusus
     recyclabilityBase = 70;
   } else {
-    // Other items have low recyclability
+    // Item lain memiliki daur ulang rendah
     recyclabilityBase = 30;
   }
   
-  // Cap recyclability score at 98
+  // Batasi skor daur ulang pada 98
   const recyclabilityScore = Math.min(98, recyclabilityBase);
   
-  // Generate detailed recyclability information
+  // Hasilkan informasi daur ulang terperinci
   let recyclabilityDetails = "";
   if (recyclabilityScore > 90) {
-    recyclabilityDetails = "Highly recyclable with standard processes";
+    recyclabilityDetails = "Sangat dapat didaur ulang dengan proses standar";
   } else if (recyclabilityScore > 70) {
-    recyclabilityDetails = "Recyclable but may require special handling";
+    recyclabilityDetails = "Dapat didaur ulang tetapi mungkin memerlukan penanganan khusus";
   } else if (recyclabilityScore > 50) {
-    recyclabilityDetails = "Limited recyclability - check local guidelines";
+    recyclabilityDetails = "Daur ulang terbatas - periksa pedoman lokal";
   } else {
-    recyclabilityDetails = "Difficult to recycle with standard methods";
+    recyclabilityDetails = "Sulit didaur ulang dengan metode standar";
   }
   
-  // More detailed disposal instructions based on waste type
+  // Instruksi pembuangan yang lebih terperinci berdasarkan jenis sampah
   let disposalMethod = "";
   if (isRecyclable) {
     if (type === "Plastic") {
-      disposalMethod = "Clean thoroughly, check for recycling code on bottom, place in plastic recycling bin. Remove caps and labels if required by local guidelines.";
+      disposalMethod = "Bersihkan secara menyeluruh, periksa kode daur ulang di bagian bawah, tempatkan di tempat sampah daur ulang plastik. Lepaskan tutup dan label jika diperlukan oleh pedoman lokal.";
     } else if (type === "Paper") {
-      disposalMethod = "Keep dry and clean, remove any plastic or metal attachments, place in paper recycling bin. Shred sensitive documents first.";
+      disposalMethod = "Jaga agar tetap kering dan bersih, lepaskan lampiran plastik atau logam, tempatkan di tempat sampah daur ulang kertas. Hancurkan dokumen sensitif terlebih dahulu.";
     } else if (type === "Glass") {
-      disposalMethod = "Rinse thoroughly, remove caps and lids, place in glass recycling bin. Be careful of broken glass and separate by color if required locally.";
+      disposalMethod = "Bilas secara menyeluruh, lepaskan tutup dan penutup, tempatkan di tempat sampah daur ulang kaca. Berhati-hatilah dengan kaca pecah dan pisahkan berdasarkan warna jika diperlukan secara lokal.";
     } else if (type === "Metal") {
-      disposalMethod = "Clean thoroughly, remove non-metal components, place in metal recycling bin. Crush aluminum cans to save space if possible.";
+      disposalMethod = "Bersihkan secara menyeluruh, lepaskan komponen non-logam, tempatkan di tempat sampah daur ulang logam. Hancurkan kaleng aluminium untuk menghemat ruang jika memungkinkan.";
     }
   } else if (type === "Organic") {
-    disposalMethod = "Place in home compost or green waste collection. Avoid including meat/dairy in home compost systems. Consider worm composting for faster breakdown.";
+    disposalMethod = "Tempatkan di kompos rumah atau pengumpulan limbah hijau. Hindari memasukkan daging/susu dalam sistem kompos rumah. Pertimbangkan kompos cacing untuk pemecahan yang lebih cepat.";
   } else if (type === "Electronic") {
-    disposalMethod = "Take to designated e-waste collection center or retailer recycling program. Never place in regular trash due to hazardous materials.";
+    disposalMethod = "Bawa ke pusat pengumpulan e-waste yang ditunjuk atau program daur ulang pengecer. Jangan pernah menempatkan di tempat sampah biasa karena bahan berbahaya.";
   } else {
-    disposalMethod = "Check local waste authority guidelines for proper disposal method.";
+    disposalMethod = "Periksa pedoman otoritas limbah lokal untuk metode pembuangan yang tepat.";
   }
   
   return {
@@ -202,11 +334,12 @@ function generateSimulatedClassification(imageElement: HTMLImageElement): Classi
     disposalMethod,
     materialComposition: materialPropertiesMap[type] || [],
     recyclabilityScore,
-    recyclabilityDetails
+    recyclabilityDetails,
+    category
   };
 }
 
-// Enhanced image analysis for simulation
+// Analisis gambar yang ditingkatkan untuk simulasi
 function analyzeImageForSimulation(imageElement: HTMLImageElement): {
   brightness: number;
   colorfulness: number;
@@ -214,24 +347,24 @@ function analyzeImageForSimulation(imageElement: HTMLImageElement): {
   greenness: number;
   complexity: number;
 } {
-  // In a real implementation, we would analyze the image pixel data
-  // For this simulation, we'll use image dimensions to create deterministic but random-seeming values
+  // Dalam implementasi nyata, kita akan menganalisis data piksel gambar
+  // Untuk simulasi ini, kita akan menggunakan dimensi gambar untuk membuat nilai yang tampak acak tetapi deterministik
   const width = imageElement.width || 100;
   const height = imageElement.height || 100;
   const aspectRatio = width / height;
   const naturalWidth = imageElement.naturalWidth || width;
   const naturalHeight = imageElement.naturalHeight || height;
   
-  // Use various image properties to generate simulated image characteristics
-  // These values will deterministically classify different images consistently
+  // Gunakan berbagai properti gambar untuk menghasilkan karakteristik gambar simulasi
+  // Nilai-nilai ini akan secara deterministik mengklasifikasikan gambar yang berbeda secara konsisten
   const brightness = (width % 255) / 255;
   const colorfulness = (height % 255) / 255;
   const sharpness = ((width + height) % 100) / 100;
   
-  // Additional properties for better recyclable vs organic detection
-  // In real implementation, we would analyze color channels and edge detection
-  const greenness = ((naturalWidth * 2) % 255) / 255; // Higher for greener, brownish items (likely organic)
-  const complexity = ((naturalHeight + width) % 100) / 100; // Higher for items with more edges/detail
+  // Properti tambahan untuk deteksi daur ulang vs organik yang lebih baik
+  // Dalam implementasi nyata, kita akan menganalisis saluran warna dan deteksi tepi
+  const greenness = ((naturalWidth * 2) % 255) / 255; // Lebih tinggi untuk item yang lebih hijau, kecoklatan (kemungkinan organik)
+  const complexity = ((naturalHeight + width) % 100) / 100; // Lebih tinggi untuk item dengan lebih banyak tepi/detail
   
   return { 
     brightness, 
@@ -240,28 +373,4 @@ function analyzeImageForSimulation(imageElement: HTMLImageElement): {
     greenness,
     complexity
   };
-}
-
-export async function classifyImage(imageElement: HTMLImageElement): Promise<ClassificationResult> {
-  try {
-    // Always use simulated classification for demo purposes
-    // This focuses on distinguishing between recyclable and organic waste
-    console.log("Using simulated classification for better recyclability distinction");
-    return generateSimulatedClassification(imageElement);
-  } catch (error) {
-    console.error("Classification error:", error);
-    console.log("Falling back to basic simulated classification due to error");
-    
-    // Very basic fallback in case even the simulation fails
-    const defaultType = "Mixed";
-    return {
-      type: defaultType,
-      confidence: 0.75,
-      isRecyclable: false,
-      disposalMethod: "Separate components and check local recycling guidelines",
-      materialComposition: ["Multiple materials", "Requires sorting"],
-      recyclabilityScore: 40,
-      recyclabilityDetails: "Limited recyclability - check local guidelines"
-    };
-  }
 }
