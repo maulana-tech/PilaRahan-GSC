@@ -6,11 +6,15 @@ const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 // Inisialisasi klien Gemini
 export const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Konfigurasi model
-export const MODEL_NAME = "googleai/gemini-2.0-flash";
+// Konfigurasi model - Menggunakan model yang tersedia
+export const MODEL_NAME = "gemini-1.5-flash"; // Mengubah dari "googleai/gemini-2.0-flash" ke model yang tersedia
 
 // Fungsi untuk mendapatkan model
 export function getGeminiModel() {
+  // Validasi API key terlebih dahulu
+  if (!API_KEY || API_KEY.trim() === "") {
+    throw new Error("API key Gemini tidak ditemukan. Pastikan VITE_GEMINI_API_KEY telah diatur di file .env");
+  }
   return genAI.getGenerativeModel({ model: MODEL_NAME });
 }
 
@@ -32,14 +36,26 @@ export async function generateGeminiResponse(prompt: string): Promise<string> {
       maxOutputTokens: 1000,
     };
 
-    // Kirim prompt ke model
-    const result = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig,
-    });
+    try {
+      // Kirim prompt ke model dengan penanganan fetch error
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig,
+      });
 
-    const response = result.response;
-    return response.text();
+      const response = result.response;
+      return response.text();
+    } catch (fetchError: any) {
+      // Tangani error fetch secara spesifik
+      console.error("Fetch error saat mengakses Gemini API:", fetchError);
+      
+      if (fetchError.message && fetchError.message.includes("Failed to fetch")) {
+        throw new Error("Gagal terhubung ke layanan Gemini API. Periksa koneksi internet Anda atau coba lagi nanti.");
+      }
+      
+      // Lempar kembali error asli jika bukan masalah fetch
+      throw fetchError;
+    }
   } catch (error: any) {
     console.error("Error saat mengakses Gemini API:", error);
     
@@ -49,7 +65,8 @@ export async function generateGeminiResponse(prompt: string): Promise<string> {
         error.message.includes("authentication") || 
         error.message.includes("PERMISSION_DENIED") ||
         error.message.includes("403") ||
-        error.message.includes("identity")
+        error.message.includes("identity") ||
+        error.message.includes("invalid key")
       )) {
       throw new Error("API key Gemini tidak valid atau belum diaktifkan. Pastikan Anda telah mendaftar di Google AI Studio dan mengaktifkan API key Anda.");
     }
@@ -58,7 +75,9 @@ export async function generateGeminiResponse(prompt: string): Promise<string> {
     if (error.message && (
         error.message.includes("Failed to fetch") || 
         error.message.includes("network") ||
-        error.message.includes("connection")
+        error.message.includes("connection") ||
+        error.message.includes("timeout") ||
+        error.message.includes("abort")
       )) {
       throw new Error("Gagal terhubung ke layanan Gemini API. Periksa koneksi internet Anda atau coba lagi nanti.");
     }
