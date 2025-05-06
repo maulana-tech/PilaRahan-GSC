@@ -11,6 +11,7 @@ import AiChat from "@/pages/AiChat";
 import Footer from "@/components/Footer";
 import NotFound from "@/pages/not-found";
 import { NavbarWrapper } from "./components/Navbar";
+import Education from "./pages/Education";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
           <Route path="/recycling-centers" component={RecyclingCenters} />
           <Route path="/about" component={About} />
           <Route path="/ai-chat" component={AiChat} />
+          <Route path="/education" component={Education} />
           <Route component={NotFound} />
         </Switch>
       </main>
