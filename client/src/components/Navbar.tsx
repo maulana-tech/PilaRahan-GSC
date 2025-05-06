@@ -78,7 +78,7 @@ export function NavbarWrapper() {
             <MobileMenuItem href="/scan" onClick={() => setIsMenuOpen(false)}>
               Scan
             </MobileMenuItem>
-            <MobileSubmenu title="Layanan">
+            <MobileSubmenu title="Services">
               <MobileMenuItem
                 href="/learning"
                 onClick={() => setIsMenuOpen(false)}
@@ -89,15 +89,9 @@ export function NavbarWrapper() {
                 href="/learning-center"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Edukasi
+                Recycle Center
               </MobileMenuItem>
             </MobileSubmenu>
-            <MobileMenuItem
-              href="/recycling-centers"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Recycle center
-            </MobileMenuItem>
             <MobileMenuItem href="/ai-chat" onClick={() => setIsMenuOpen(false)}>
               AI Assistant
             </MobileMenuItem>
@@ -165,20 +159,12 @@ function DesktopNavbar() {
             AI Assistant
           </a>
         </div>
-        <MenuItem setActive={setActive} active={active} item="Layanan">
+        <MenuItem setActive={setActive} active={active} item="Services">
           <div className="flex flex-col space-y-4 text-sm">
             <HoveredLink href="/learning">Learning</HoveredLink>
-            <HoveredLink href="/learning-center">Edukasi</HoveredLink>
+            <HoveredLink href="/recycling-centers">Recycle center</HoveredLink>
           </div>
         </MenuItem>
-        <div className="cursor-pointer">
-          <a
-            href="/recycling-centers"
-            className="text-emerald-800 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors font-medium"
-          >
-            Recycle center
-          </a>
-        </div>
       </Menu>
     </div>
   );
