@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 
 // We'll use Leaflet for the map functionality
 import "leaflet/dist/leaflet.css";
+// Import Leaflet only on the client side
 import L from "leaflet";
 
 interface Location {
@@ -52,6 +53,13 @@ export default function RecyclingCenterMap() {
 
       setMap(newMap);
     }
+    
+    // Cleanup function untuk menghindari memory leak
+    return () => {
+      if (map) {
+        map.remove();
+      }
+    };
   }, [mapRef, map]);
 
   // Update map when user location changes
@@ -129,10 +137,10 @@ export default function RecyclingCenterMap() {
   };
 
   return (
-    <Card className="neumorphic p-4 bg-background">
+    <Card className="neumorphic p-4 bg-background mt-0 sm:mt-24">
       <div
         ref={mapRef}
-        className="bg-gray-200 rounded-lg w-full h-[400px] overflow-hidden"
+        className="bg-gray-200 rounded-lg w-full h-[500px] overflow-hidden relative z-10"
       >
         {!userLocation && (
           <div className="w-full h-full flex items-center justify-center">

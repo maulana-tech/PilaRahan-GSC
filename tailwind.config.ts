@@ -91,7 +91,7 @@ export default {
         shimmer: "shimmerText 3s linear infinite",
       },
       backgroundImage: {
-        shimmer: "linear-gradient(90deg, #4ade80, #22d3ee, #6366f1)",
+        shimmer: "linear-gradient(90deg,rgb(7, 255, 94), #4ade80, #22c55e)",
       },
       backgroundSize: {
         "shimmer-size": "200% 100%",
