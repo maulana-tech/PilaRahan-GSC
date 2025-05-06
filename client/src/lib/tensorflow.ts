@@ -4,8 +4,7 @@ import * as tf from "@tensorflow/tfjs";
 tf.setBackend('webgl').then(() => console.log('WebGL backend initialized'));
 
 // Model configuration
-const PRIMARY_MODEL_URL = "../data/model/model.json";
-const FALLBACK_MODEL_URL = "../data/model/fallback_model.json"; // Assume a lighter model as fallback
+const MODEL_URL = "../data/model/model.json";
 const WASTE_CATEGORIES = ["Plastic", "Paper", "Glass", "Metal", "Organic", "Electronic"];
 const CONFIDENCE_THRESHOLD = 0.75; // Minimum confidence for valid predictions
 
@@ -27,14 +26,13 @@ export interface ClassificationResult {
     carbonFootprintKg: number; // Estimated CO2 emissions for improper disposal
     energyRecoveryPotentialMJ: number; // Potential energy recovery if recycled
   };
-  predictionQuality: 'high' | 'medium' | 'low'; // Based on confidence and model reliability
+  predictionQuality: 'high' | 'medium' | 'low'; // Based on confidence
 }
 
-// Model loading with fallback and caching
+// Load model with caching
 export async function loadModel(): Promise<tf.LayersModel> {
   if (wasteModel) return wasteModel;
   if (isModelLoading) {
-    // Wait for ongoing load
     while (isModelLoading) await new Promise(resolve => setTimeout(resolve, 100));
     if (wasteModel) return wasteModel;
   }
@@ -42,12 +40,12 @@ export async function loadModel(): Promise<tf.LayersModel> {
   isModelLoading = true;
   try {
     const loadingProgress = (fraction: number) => {
-      console.log(`Primary model loading: ${Math.floor(fraction * 100)}%`);
+      console.log(`Model loading: ${Math.floor(fraction * 100)}%`);
     };
 
-    const modelPromise = tf.loadLayersModel(PRIMARY_MODEL_URL, { onProgress: loadingProgress });
+    const modelPromise = tf.loadLayersModel(MODEL_URL, { onProgress: loadingProgress });
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Primary model loading timed out")), 20000);
+      setTimeout(() => reject(new Error("Model loading timed out")), 20000);
     });
 
     wasteModel = await Promise.race([modelPromise, timeoutPromise]) as tf.LayersModel;
@@ -57,50 +55,32 @@ export async function loadModel(): Promise<tf.LayersModel> {
     await wasteModel.predict(dummyTensor);
     tf.dispose(dummyTensor);
 
-    console.log("Primary model loaded successfully");
+    console.log("Model loaded successfully");
     return wasteModel;
   } catch (error) {
-    console.warn("Primary model failed to load:", error);
-    console.log("Attempting to load fallback model...");
-
-    try {
-      const fallbackPromise = tf.loadLayersModel(FALLBACK_MODEL_URL);
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error("Fallback model loading timed out")), 15000);
-      });
-
-      wasteModel = await Promise.race([fallbackPromise, timeoutPromise]) as tf.LayersModel;
-
-      const dummyTensor = tf.zeros([1, 224, 224, 3]);
-      await wasteModel.predict(dummyTensor);
-      tf.dispose(dummyTensor);
-
-      console.log("Fallback model loaded successfully");
-      return wasteModel;
-    } catch (fallbackError) {
-      console.error("Failed to load fallback model:", fallbackError);
-      throw new Error("All model loading attempts failed");
-    }
+    console.error("Failed to load model:", error);
+    throw new Error("Model loading failed");
   } finally {
     isModelLoading = false;
   }
 }
 
-// Advanced image preprocessing with augmentation
+// Preprocess image to match VGG19 requirements
 export async function preprocessImage(imageElement: HTMLImageElement): Promise<tf.Tensor4D[]> {
   return tf.tidy(() => {
     const baseTensor = tf.browser.fromPixels(imageElement).toFloat();
     const resizedTensor = tf.image.resizeBilinear(baseTensor, [224, 224]);
 
-    // Normalize to [-1, 1] for VGG19
-    const offset = tf.scalar(127.5);
-    const normalizedTensor = resizedTensor.sub(offset).div(offset);
+    // Convert to BGR and subtract ImageNet means (VGG19 preprocessing)
+    const bgrTensor = tf.reverse(resizedTensor, -1); // RGB to BGR
+    const imagenetMeans = tf.tensor1d([103.939, 116.779, 123.68]); // BGR means
+    const normalizedTensor = bgrTensor.sub(imagenetMeans);
 
     // Augmentations for ensemble prediction
     const augmentations = [
       normalizedTensor, // Original
-      normalizedTensor.mul(tf.scalar(0.9)), // Slightly darker
-      normalizedTensor.add(tf.randomUniform([224, 224, 3], -0.1, 0.1)), // Noise injection
+      normalizedTensor.mul(tf.scalar(0.95)), // Slightly darker
+      normalizedTensor.add(tf.randomUniform([224, 224, 3], -10, 10)), // Noise injection
     ];
 
     // Add batch dimension to each
@@ -108,7 +88,7 @@ export async function preprocessImage(imageElement: HTMLImageElement): Promise<t
   });
 }
 
-// Enhanced waste classification with ensemble prediction
+// Classify image with ensemble prediction
 export async function classifyImage(imageElement: HTMLImageElement): Promise<ClassificationResult> {
   try {
     const model = await loadModel();
@@ -175,7 +155,7 @@ function computeClassificationResult(type: string, confidence: number, imageElem
     "Electronic": ["Circuit boards", "Mixed materials", "Rare elements", "Complex assembly"],
   };
 
-  // Enhanced recyclability scoring with rule-based adjustments
+  // Recyclability scoring
   let recyclabilityBase = 0;
   if (isRecyclable) {
     recyclabilityBase = Math.round(confidence * 100);
@@ -232,7 +212,7 @@ function computeClassificationResult(type: string, confidence: number, imageElem
     "Unknown": { carbonFootprintKg: 2.0, energyRecoveryPotentialMJ: 10 },
   };
 
-  // Prediction quality assessment
+  // Prediction quality
   const predictionQuality = confidence > 0.95 ? 'high' : 
                           confidence > 0.85 ? 'medium' : 'low';
 
@@ -254,7 +234,7 @@ function computeClassificationResult(type: string, confidence: number, imageElem
 function generateSimulatedClassification(imageElement: HTMLImageElement, isLowConfidence: boolean): ClassificationResult {
   const imageData = analyzeImageForSimulation(imageElement);
 
-  // Enhanced type weights with context-aware adjustments
+  // Enhanced type weights
   let typeWeights = {
     "Plastic": imageData.colorfulness * 1.8 + imageData.sharpness * 0.6 + (isLowConfidence ? -0.2 : 0),
     "Paper": (1 - imageData.colorfulness) * 0.9 + imageData.brightness * 0.8,
@@ -274,7 +254,7 @@ function generateSimulatedClassification(imageElement: HTMLImageElement, isLowCo
     }
   }
 
-  // Confidence calculation based on weight differences
+  // Confidence calculation
   let secondHighestWeight = 0;
   for (const [t, weight] of Object.entries(typeWeights)) {
     if (t !== selectedType && weight > secondHighestWeight) {
@@ -305,15 +285,15 @@ function analyzeImageForSimulation(imageElement: HTMLImageElement): {
   const naturalWidth = imageElement.naturalWidth || width;
   const naturalHeight = imageElement.naturalHeight || height;
 
-  // Deterministic pseudo-random values based on image properties
+  // Deterministic pseudo-random values
   const brightness = ((width * 17) % 255) / 255;
   const colorfulness = ((height * 23) % 255) / 255;
   const sharpness = (((width + height) * 31) % 100) / 100;
   const greenness = ((naturalWidth * 29) % 255) / 255;
   const complexity = (((naturalHeight + width) * 41) % 100) / 100;
-  const transparency = ((naturalWidth * 37) % 100) / 100; // Simulated transparency
-  const reflectivity = ((naturalHeight * 43) % 100) / 100; // Simulated reflectivity
-  const texture = (((width + naturalHeight) * 47) % 100) / 100; // Simulated texture
+  const transparency = ((naturalWidth * 37) % 100) / 100;
+  const reflectivity = ((naturalHeight * 43) % 100) / 100;
+  const texture = (((width + naturalHeight) * 47) % 100) / 100;
 
   return {
     brightness,
