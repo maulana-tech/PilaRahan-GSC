@@ -24,7 +24,7 @@ export default function WasteAnalysisResults({
   const { data: recommendations, isLoading } = useQuery({
     queryKey: ['/api/recommendations', classificationResult.type],
     queryFn: async () => {
-      return await getRecyclingRecommendations(classificationResult.type);
+      return await getRecyclingRecommendations(classificationResult.type, classificationResult.confidence);
     },
     enabled: !!classificationResult.type,
   });
@@ -155,7 +155,7 @@ export default function WasteAnalysisResults({
               <p className="text-primary animate-pulse">Loading recommendations...</p>
             ) : (
               <p className="text-primary">
-                {recommendations?.recommendation || classificationResult.disposalMethod}
+                {recommendations?.[0] || classificationResult.disposalMethod}
               </p>
             )}
           </div>
@@ -177,7 +177,7 @@ export default function WasteAnalysisResults({
                   <li className="animate-pulse">Please wait...</li>
                 </>
               ) : (
-                recommendations?.environmentalImpact?.map((impact, index) => (
+                recommendations?.slice(1)?.map((impact, index) => (
                   <li key={index}>{impact}</li>
                 )) || (
                   <>
