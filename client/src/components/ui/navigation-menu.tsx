@@ -86,7 +86,7 @@ export const Menu = memo(({
   return (
     <nav
       onMouseLeave={handleMouseLeave}
-      className="relative rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 flex justify-center space-x-6 px-8 py-4"
+      className="relative rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-white/95 dark:bg-emerald-950/95 backdrop-blur-md shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 flex justify-center space-x-12 px-10 py-4 z-50"
     >
       {children}
     </nav>

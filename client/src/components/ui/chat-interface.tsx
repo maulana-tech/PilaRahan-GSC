@@ -68,7 +68,7 @@ export function ChatInterface({
             onBlur={() => setIsFocused(false)}
             placeholder={placeholder}
             className={cn(
-              "pr-10 py-6 bg-background border-gray-300 dark:border-gray-700 rounded-full shadow-sm transition-all duration-300",
+              "pr-10 py-6 bg-background border-gray-300 dark:border-gray-700 rounded-2xl shadow-sm transition-all duration-300",
               isFocused ? "ring-2 ring-primary/30 border-primary" : "",
               isLoading ? "opacity-70" : ""
             )}
@@ -85,7 +85,7 @@ export function ChatInterface({
                 }
               }}
               disabled={!inputValue.trim() || isLoading}
-              className="rounded-full w-8 h-8 p-0 hover:bg-primary/20 transition-colors duration-200"
+              className="rounded-2xl w-8 h-8 p-0 hover:bg-primary/20 transition-colors duration-200"
               variant={inputValue.trim() ? "default" : "ghost"}
             >
               {isLoading ? (
@@ -103,14 +103,6 @@ export function ChatInterface({
         </div>
         
         <div className="flex items-center justify-center gap-2 mt-2">
-          <Button variant="ghost" size="sm" className="text-xs rounded-full hover:bg-primary/10 transition-colors duration-200">
-            <Leaf className="h-3 w-3 mr-1" />
-            PilaRahan
-          </Button>
-          <Button variant="ghost" size="sm" className="text-xs rounded-full hover:bg-primary/10 transition-colors duration-200">
-            <Sparkles className="h-3 w-3 mr-1" />
-            Cerdas
-          </Button>
           <div className="ml-auto text-xs text-muted-foreground">
             PilaRahan AI
           </div>
@@ -165,12 +157,12 @@ export function WelcomeMessage({ username = "Pengguna" }) {
 
 export function SuggestedQuestions({ onQuestionClick }: { onQuestionClick: (question: string) => void }) {
   const questions = [
-    { text: "Bagaimana cara mendaur ulang botol plastik?", icon: <Recycle className="h-4 w-4 mr-2" /> },
-    { text: "Apa dampak sampah elektronik terhadap lingkungan?", icon: <Trash2 className="h-4 w-4 mr-2" /> },
-    { text: "Tips mengurangi sampah rumah tangga?", icon: <Leaf className="h-4 w-4 mr-2" /> },
-    { text: "Lokasi tempat daur ulang terdekat?", icon: <Recycle className="h-4 w-4 mr-2" /> },
-    { text: "Cara membuat kompos dari sampah dapur?", icon: <Leaf className="h-4 w-4 mr-2" /> },
-    { text: "Apa itu konsep zero waste?", icon: <Trash2 className="h-4 w-4 mr-2" /> },
+    { text: "Bagaimana cara mendaur ulang botol plastik?"},
+    { text: "Apa dampak sampah elektronik terhadap lingkungan?"},
+    { text: "Tips mengurangi sampah rumah tangga?"},
+    { text: "Lokasi tempat daur ulang terdekat?"},
+    { text: "Cara membuat kompos dari sampah dapur?"},
+    { text: "Apa itu konsep zero waste?"},
   ];
 
   return (
@@ -178,7 +170,7 @@ export function SuggestedQuestions({ onQuestionClick }: { onQuestionClick: (ques
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.8, duration: 0.5 }}
-      className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 max-w-2xl mx-auto"
+      className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 max-w-2xl mx-auto mb-12"
     >
       {questions.map((question, index) => (
         <motion.div
@@ -193,7 +185,6 @@ export function SuggestedQuestions({ onQuestionClick }: { onQuestionClick: (ques
           >
             <CardContent className="p-3">
               <div className="flex items-center text-sm">
-                {question.icon}
                 <span>{question.text}</span>
               </div>
             </CardContent>
@@ -204,29 +195,6 @@ export function SuggestedQuestions({ onQuestionClick }: { onQuestionClick: (ques
   );
 }
 
-export function ActionButtons() {
-  return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay: 1.2, duration: 0.5 }}
-      className="flex flex-wrap justify-center gap-2 mt-6"
-    >
-      <Button variant="outline" className="rounded-md hover:bg-primary/10 hover:shadow-sm transition-all duration-200">
-        <Recycle className="h-4 w-4 mr-2" />
-        Panduan Daur Ulang
-      </Button>
-      <Button variant="outline" className="rounded-md hover:bg-primary/10 hover:shadow-sm transition-all duration-200">
-        <Leaf className="h-4 w-4 mr-2" />
-        Tips Lingkungan
-      </Button>
-      <Button variant="outline" className="rounded-md hover:bg-primary/10 hover:shadow-sm transition-all duration-200">
-        <Trash2 className="h-4 w-4 mr-2" />
-        Jenis Sampah
-      </Button>
-    </motion.div>
-  );
-}
 
 export function FeedbackButtons({ messageId }: { messageId: string }) {
   const [feedback, setFeedback] = useState<'like' | 'dislike' | null>(null);
@@ -260,7 +228,7 @@ export function FeedbackButtons({ messageId }: { messageId: string }) {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className={`rounded-full p-1 ${feedback === 'like' ? 'bg-primary/20 text-primary' : ''}`}
+                className={`rounded-2xl p-1 ${feedback === 'like' ? 'bg-primary/20 text-primary' : ''}`}
                 onClick={() => handleFeedback('like')}
               >
                 <ThumbsUp className="h-3 w-3" />

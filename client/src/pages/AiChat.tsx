@@ -4,8 +4,7 @@ import { cn } from "@/lib/utils";
 import { Bot, Loader2, Leaf } from "lucide-react";
 import { 
   ChatInterface, 
-  WelcomeMessage, 
-  ActionButtons, 
+  WelcomeMessage,  
   SuggestedQuestions,
   FeedbackButtons,
   ScrollToBottomButton
@@ -197,7 +196,6 @@ export default function AiChat() {
                     <SuggestedQuestions onQuestionClick={handleSuggestedQuestionClick} />
                   </div>
                 )}
-                <ActionButtons />
               </>
             ) : (
               <div className="space-y-6 pb-4">

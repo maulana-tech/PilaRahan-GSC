@@ -40,8 +40,8 @@ export function NavbarWrapper() {
     <>
       {/* Tampilan Mobile */}
       {isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-50 px-4 py-3">
-          <div className="flex items-center justify-between w-full bg-white/90 dark:bg-emerald-950/90 backdrop-blur-md rounded-full border border-emerald-200 dark:border-emerald-800 shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 px-4 py-2 transition-all duration-300 hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/60">
+        <div className="fixed top-0 left-0 right-0 z-[100] px-4 py-3">
+          <div className="flex items-center justify-between w-full bg-white/90 dark:bg-emerald-950/90 backdrop-blur-md rounded-2xl border border-emerald-200 dark:border-emerald-800 shadow-lg shadow-emerald-100/30 dark:shadow-emerald-900/40 px-4 py-2 transition-all duration-300 hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/60">
             {/* Logo */}
             <a href="/" className="flex items-center group">
               <div className="relative overflow-hidden rounded-full p-1 bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 transition-transform duration-300 group-hover:scale-105">
@@ -59,7 +59,7 @@ export function NavbarWrapper() {
             {/* Hamburger Menu Button */}
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)} 
-              className="p-2 rounded-full bg-emerald-50 dark:bg-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm"
+              className="p-2 rounded-2xl bg-emerald-50 dark:bg-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-800 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-sm"
               aria-label="Menu"
             >
               {isMenuOpen ? (
@@ -86,7 +86,7 @@ export function NavbarWrapper() {
                 Learning
               </MobileMenuItem>
               <MobileMenuItem
-                href="/learning-center"
+                href="/recycling-centers"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Recycle Center
@@ -101,7 +101,7 @@ export function NavbarWrapper() {
 
       {/* Tampilan Desktop */}
       {!isMobile && (
-        <div className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div className="fixed top-0 left-0 right-0 z-[100] px-6 py-4">
           {/* Logo untuk desktop - posisi absolute */}
           <div className="absolute top-4 left-6 z-50">
             <a href="/" className="flex items-center group">
@@ -121,6 +121,18 @@ export function NavbarWrapper() {
           {/* Menu desktop - posisi tengah */}
           <div className="flex justify-center">
             <DesktopNavbar />
+          </div>
+
+          {/* AI Assistant - posisi kanan */}
+          <div className="absolute top-4 right-6 z-50">
+            <a 
+              href="/ai-chat" 
+              className="flex items-center group px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 border border-emerald-200 dark:border-emerald-800 shadow-md shadow-emerald-100/30 dark:shadow-emerald-900/40 transition-all duration-300 hover:shadow-emerald-200/50 dark:hover:shadow-emerald-800/60 hover:scale-105"
+            >
+              <span className="text-emerald-800 dark:text-emerald-400 font-medium transition-colors duration-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-300">
+                AI Assistant
+              </span>
+            </a>
           </div>
         </div>
       )}
@@ -148,15 +160,7 @@ function DesktopNavbar() {
             href="/scan"
             className="text-emerald-800 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors font-medium"
           >
-            Scan
-          </a>
-        </div>
-        <div className="cursor-pointer">
-          <a
-            href="/ai-chat"
-            className="text-emerald-800 hover:text-emerald-600 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors font-medium"
-          >
-            AI Assistant
+            Capture
           </a>
         </div>
         <MenuItem setActive={setActive} active={active} item="Services">
