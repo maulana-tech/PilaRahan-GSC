@@ -1,9 +1,7 @@
 import * as tf from "@tensorflow/tfjs";
 
-// Initialize WebGL backend for GPU acceleration
 tf.setBackend('webgl').then(() => console.log('WebGL backend initialized'));
 
-// Model configuration
 const MODEL_URL = "/data/model/model.json";
 const WASTE_CATEGORIES = ["Plastic", "Paper", "Glass", "Metal", "Organic", "Electronic"];
 const CONFIDENCE_THRESHOLD = 0.75; // Minimum confidence for valid predictions
