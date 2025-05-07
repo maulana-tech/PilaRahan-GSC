@@ -3,13 +3,13 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Konfigurasi API Gemini
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
 
-// Inisialisasi klien Gemini
+
 export const genAI = new GoogleGenerativeAI(API_KEY);
 
-// Konfigurasi model - Menggunakan model yang tersedia
-export const MODEL_NAME = "gemini-1.5-flash"; // Mengubah dari "googleai/gemini-2.0-flash" ke model yang tersedia
 
-// Fungsi untuk mendapatkan model
+export const MODEL_NAME = "gemini-2.0-flash"; 
+
+
 export function getGeminiModel() {
   // Validasi API key terlebih dahulu
   if (!API_KEY || API_KEY.trim() === "") {
