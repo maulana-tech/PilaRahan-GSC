@@ -4,22 +4,22 @@ tf.setBackend('webgl').then(() => console.log('WebGL backend initialized'));
 
 const MODEL_URL = "/data/model/model.json";
 const WASTE_CATEGORIES = ["Plastic", "Paper", "Glass", "Metal", "Organic", "Electronic"];
-const CONFIDENCE_THRESHOLD = 0.75; // Minimum confidence for valid predictions
+const CONFIDENCE_THRESHOLD = 0.75; 
 
-// Cache for loaded model
+
 let wasteModel: tf.LayersModel | null = null;
 let isModelLoading = false;
 
-// Enhanced classification result interface
+
 export interface ClassificationResult {
   type: string;
   confidence: number;
   isRecyclable: boolean;
   disposalMethod: string;
   materialComposition: string[];
-  recyclabilityScore: number; // 0-100
+  recyclabilityScore: number; 
   recyclabilityDetails: string;
-  category: string; // "Organik" or "Recycle"
+  category: string; 
   environmentalImpact: {
     carbonFootprintKg: number; // Estimated CO2 emissions for improper disposal
     energyRecoveryPotentialMJ: number; // Potential energy recovery if recycled
