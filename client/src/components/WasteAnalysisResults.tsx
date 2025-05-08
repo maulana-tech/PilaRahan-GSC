@@ -3,7 +3,7 @@ import { Check, Tags, Lightbulb, Globe, MapPin, RotateCw, BarChart, Award, Layer
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getRecyclingRecommendations } from "@/lib/gemini";
-import { ClassificationResult } from "@/lib/tensorflow";
+import { ClassificationResult } from "@/lib/classify-waste-image";
 import { Link } from "wouter";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
