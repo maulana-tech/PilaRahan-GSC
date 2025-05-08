@@ -1,5 +1,5 @@
 'use server';
-import { classifyWasteImage } from '@/lib/classify-waste-image';
+import { classifyWasteImage, ClassifyWasteImageInput } from '@/lib/classify-waste-image';
 
 export interface ClassificationRequest {
   dataUri: string;
@@ -24,8 +24,8 @@ export async function classifyImagesAction(
 
   for (const image of images) {
     try {
-      const classificationInput = { photoDataUri: image.dataUri };
-      const classificationResult = await classifyWasteImage({ photoDataUri: image.dataUri });
+      const classificationInput: ClassifyWasteImageInput = { photoDataUri: image.dataUri };
+      const classificationResult = await classifyWasteImage(classificationInput);
       results.push({
         category: classificationResult.category,
         confidence: classificationResult.confidence,
