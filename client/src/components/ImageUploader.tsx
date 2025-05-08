@@ -2,12 +2,12 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import {
   Upload,
   Camera,
-  Image,
   FileImage,
   MoveUpRight,
-  ChevronsUp,
   RefreshCw,
   Check,
+  X,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -64,8 +64,8 @@ export default function ImageUploader({
   const processFile = (file: File) => {
     if (!file.type.match("image.*")) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload an image file (JPEG, PNG, etc.)",
+        title: "Tipe file tidak valid",
+        description: "Silakan unggah file gambar (JPEG, PNG, dll)",
         variant: "destructive",
       });
       return;
@@ -147,8 +147,8 @@ export default function ImageUploader({
     } catch (error) {
       console.error("Error accessing camera:", error);
       toast({
-        title: "Camera access failed",
-        description: "Please make sure you have granted camera permissions.",
+        title: "Akses kamera gagal",
+        description: "Pastikan Anda telah memberikan izin kamera.",
         variant: "destructive",
       });
       setIsCapturing(false);
@@ -191,8 +191,8 @@ export default function ImageUploader({
         img.onload = () => {
           // Animate capture success
           toast({
-            title: "Image captured",
-            description: "Processing your waste item...",
+            title: "Gambar berhasil diambil",
+            description: "Memproses item sampah Anda...",
           });
 
           onImageCaptured(img.src, img);
@@ -228,13 +228,13 @@ export default function ImageUploader({
   };
 
   return (
-    <div className={cn("neumorphic p-6 bg-background relative", className)}>
+    <div className={cn("bg-white rounded-xl shadow-sm overflow-hidden", className)}>
       {!isCapturing ? (
         <div
           ref={dropZoneRef}
           className={cn(
-            "neumorphic-inset p-8 bg-background flex flex-col items-center justify-center min-h-[400px] cursor-pointer relative overflow-hidden transition-all duration-300",
-            (isDragging || isHovering) && "bg-primary bg-opacity-5 scale-[0.99]"
+            "p-6 flex flex-col items-center justify-center min-h-[350px] cursor-pointer relative overflow-hidden transition-all duration-300 border-2 border-dashed border-gray-200 rounded-lg mx-4 my-4",
+            (isDragging || isHovering) && "border-primary bg-primary/5"
           )}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -243,16 +243,16 @@ export default function ImageUploader({
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          {/* Animated background shapes */}
+          {/* Simplified background */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary opacity-5 rounded-full"></div>
-            <div className="absolute bottom-10 -left-20 w-40 h-40 bg-secondary opacity-5 rounded-full"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-primary opacity-5 rounded-full"></div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 bg-secondary opacity-5 rounded-full"></div>
           </div>
 
           {isUploading ? (
             <div className="flex flex-col items-center justify-center w-full z-10">
-              <div className="relative mb-6">
-                <div className="w-20 h-20 rounded-full border-4 border-gray-200 flex items-center justify-center">
+              <div className="relative mb-4">
+                <div className="w-16 h-16 rounded-full border-4 border-gray-200 flex items-center justify-center">
                   <div
                     className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent"
                     style={{
@@ -260,14 +260,14 @@ export default function ImageUploader({
                       transition: "transform 0.3s ease-out",
                     }}
                   ></div>
-                  <FileImage className="h-8 w-8 text-primary" />
+                  <FileImage className="h-6 w-6 text-primary" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-text mb-2">
-                Uploading Image
+              <h3 className="text-lg font-medium text-gray-800 mb-2">
+                Mengunggah Gambar
               </h3>
-              <p className="text-gray-600 mb-4">
-                Processing your waste item...
+              <p className="text-gray-600 text-sm mb-3">
+                Memproses gambar sampah Anda...
               </p>
               <div className="w-full max-w-xs h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
@@ -275,51 +275,41 @@ export default function ImageUploader({
                   style={{ width: `${uploadProgress}%` }}
                 ></div>
               </div>
-              <p className="mt-2 text-sm text-gray-500">
-                {uploadProgress}% complete
+              <p className="mt-2 text-xs text-gray-500">
+                {uploadProgress}% selesai
               </p>
             </div>
           ) : (
             <>
-              <div className="relative">
-                <div
-                  className={cn(
-                    "absolute inset-0 bg-primary bg-opacity-10 rounded-full scale-100 opacity-0 transition-all duration-500",
-                    (isDragging || isHovering) && "scale-[1.5] opacity-100"
-                  )}
-                ></div>
-                <div
-                  className={cn(
-                    "relative z-10 p-6 rounded-full bg-primary bg-opacity-10 transition-all duration-300",
-                    (isDragging || isHovering) && "bg-opacity-20 scale-95"
-                  )}
-                >
-                  <Upload
-                    className={cn(
-                      "h-12 w-12 text-primary transition-all duration-300",
-                      (isDragging || isHovering) && "scale-110"
-                    )}
-                  />
-                </div>
+              <div className="mb-4 p-4 bg-primary/10 rounded-full">
+                <ImageIcon className="h-8 w-8 text-primary" />
               </div>
-              <p className="text-lg mt-6 mb-6 text-center text-gray-600 max-w-xs">
+              
+              <h3 className="text-lg font-medium text-gray-800 mb-2">
+                Unggah Gambar Sampah
+              </h3>
+              
+              <p className="text-sm text-center text-gray-600 mb-6 max-w-xs">
                 {isDragging ? (
                   <span className="text-primary font-medium">
-                    Drop your image here!
+                    Letakkan gambar di sini!
                   </span>
                 ) : (
-                  "Drag & drop an image here or tap to browse"
+                  "Seret & letakkan gambar di sini atau ketuk untuk memilih file"
                 )}
               </p>
+              
               <Button
-                className={cn(
-                  "rounded-full font-poppins font-medium transition-all duration-300",
-                  (isDragging || isHovering) && "bg-opacity-90 scale-105"
-                )}
+                className="rounded-full font-medium transition-all duration-300 mb-2 px-6"
               >
-                <MoveUpRight className="mr-2 h-4 w-4" />
-                Upload Waste Image
+                <Upload className="mr-2 h-4 w-4" />
+                Pilih File
               </Button>
+              
+              <p className="text-xs text-gray-500 mb-4">
+                Format: JPG, PNG, GIF (Maks. 10MB)
+              </p>
+              
               <input
                 ref={fileInputRef}
                 id="file-upload"
@@ -331,66 +321,63 @@ export default function ImageUploader({
 
               {hasCamera && (
                 <>
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="h-px w-20 bg-gray-300"></div>
-                    <span className="text-gray-500">or</span>
-                    <div className="h-px w-20 bg-gray-300"></div>
+                  <div className="flex items-center gap-3 my-2">
+                    <div className="h-px w-16 bg-gray-200"></div>
+                    <span className="text-xs text-gray-500">atau</span>
+                    <div className="h-px w-16 bg-gray-200"></div>
                   </div>
 
                   <Button
-                    variant="secondary"
-                    className="mt-4 rounded-full font-poppins font-medium transition-all duration-300 hover:scale-105"
+                    variant="outline"
+                    className="rounded-full font-medium transition-all duration-300 hover:bg-primary/10 hover:text-primary"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleOpenCamera();
                     }}
                   >
-                    <Camera className="mr-2 h-4 w-4" /> Use Camera
+                    <Camera className="mr-2 h-4 w-4" /> Gunakan Kamera
                   </Button>
                 </>
-              )}
-
-              {/* Floating animation elements for enhanced UI */}
-              <div className="absolute -bottom-10 -right-10 opacity-10 animate-pulse">
-                <RefreshCw className="h-20 w-20 text-primary" />
-              </div>
-              {!isMobile && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 flex items-center animate-bounce">
-                  <ChevronsUp className="h-4 w-4 mr-1" /> Upload for analysis
-                </div>
               )}
             </>
           )}
         </div>
       ) : (
-        <div className="neumorphic-inset p-4 bg-background flex flex-col items-center justify-center min-h-[400px]">
-          <div className="relative w-full mb-4">
+        <div className="p-4 flex flex-col items-center justify-center">
+          <div className="relative w-full mb-3 bg-black rounded-lg overflow-hidden">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full h-[320px] object-cover rounded-lg"
+              className="w-full h-[300px] object-cover"
             />
-            <div className="absolute left-0 top-0 p-2 text-xs text-white bg-black bg-opacity-50 rounded-tl-lg rounded-br-lg">
-              Camera Active
+            <div className="absolute left-0 top-0 p-2 text-xs text-white bg-black bg-opacity-50 rounded-br-lg flex items-center">
+              <div className="w-2 h-2 bg-red-500 rounded-full mr-1 animate-pulse"></div>
+              Kamera Aktif
+            </div>
+            <div className="absolute right-2 top-2">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="rounded-full w-8 h-8 p-0 bg-black bg-opacity-50 hover:bg-opacity-70"
+                onClick={handleCancelCapture}
+              >
+                <X className="h-4 w-4 text-white" />
+              </Button>
             </div>
           </div>
-          <div className="flex space-x-4">
-            <Button
-              variant="default"
-              className="rounded-full"
-              onClick={handleCaptureImage}
-            >
-              <Check className="mr-2 h-4 w-4" /> Capture Photo
-            </Button>
-            <Button
-              variant="outline"
-              className="rounded-full"
-              onClick={handleCancelCapture}
-            >
-              Cancel
-            </Button>
-          </div>
+          
+          <p className="text-sm text-gray-600 mb-4 text-center">
+            Posisikan sampah di tengah frame dan pastikan pencahayaan cukup
+          </p>
+          
+          <Button
+            variant="default"
+            className="rounded-full px-6"
+            onClick={handleCaptureImage}
+          >
+            <Check className="mr-2 h-4 w-4" /> Ambil Foto
+          </Button>
         </div>
       )}
     </div>
