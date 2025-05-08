@@ -3,7 +3,15 @@ import { Check, Tags, Lightbulb, Globe, MapPin, RotateCw, BarChart, Award, Layer
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { getRecyclingRecommendations } from "@/lib/gemini";
-import { ClassificationResult } from "@/lib/classify-waste-image";
+interface ClassificationResult {
+  type: string;
+  confidence: number;
+  recyclabilityScore: number;
+  recyclabilityDetails: string;
+  isRecyclable: boolean;
+  disposalMethod: string;
+  materialComposition?: string[];
+}
 import { Link } from "wouter";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -141,25 +149,6 @@ export default function WasteAnalysisResults({
           </div>
         )}
 
-        {/* Recommendation */}
-        <div className="p-4 bg-white rounded-xl shadow">
-          <div className="flex items-center mb-3">
-            <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-white mr-3">
-              <Lightbulb className="h-5 w-5" />
-            </div>
-            <h4 className="text-lg font-bold font-poppins">Recommendation</h4>
-          </div>
-          <p className="text-gray-600 mb-2">Proper disposal method:</p>
-          <div className="bg-primary bg-opacity-10 p-3 rounded-lg">
-            {isLoading ? (
-              <p className="text-primary animate-pulse">Loading recommendations...</p>
-            ) : (
-              <p className="text-primary">
-                {recommendations?.[0] || classificationResult.disposalMethod}
-              </p>
-            )}
-          </div>
-        </div>
 
         {/* Impact Information - conditionally rendered */}
         {showImpactSection && (

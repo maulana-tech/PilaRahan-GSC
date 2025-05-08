@@ -265,9 +265,9 @@ export default function Scan() {
   };
 
   return (
-    <div className="bg-gradient-to-b from-primary/5 to-background">
+    <div className="bg-gradient-to-b from-primary/5 to-background min-h-screen">
       {/* Hero Section with Scan Feature */}
-      <section className="min-h-screen pt-20 px-4 flex flex-col items-center justify-center relative overflow-hidden">
+      <section className="pt-20 px-4 flex flex-col items-center justify-center relative overflow-hidden">
         {/* Background decorative elements */}
         <div className="absolute top-40 -left-32 w-64 h-64 bg-primary opacity-10 rounded-full filter blur-3xl"></div>
         <div className="absolute bottom-10 -right-20 w-80 h-80 bg-secondary opacity-10 rounded-full filter blur-3xl"></div>
@@ -288,73 +288,112 @@ export default function Scan() {
           </div>
 
           {modelLoading ? (
-            <div className="w-full max-w-lg mx-auto p-8 bg-white rounded-2xl shadow-lg">
-              <div className="flex flex-col items-center justify-center min-h-[300px]">
-                <Bot className="h-16 w-16 text-primary animate-pulse mb-6" />
-                <h3 className="text-xl font-bold font-poppins mb-3 text-text">
-                  Memuat Model AI...
-                </h3>
-                <div className="w-full max-w-md mb-4">
-                  <Progress value={modelLoadingProgress} max={100} className="h-2" />
-                </div>
-                <p className="text-gray-600 text-center">
-                  Menyiapkan teknologi klasifikasi sampah canggih kami
-                </p>
+            <div className="flex flex-col items-center justify-center min-h-[300px]">
+              <Bot className="h-16 w-16 text-primary animate-pulse mb-6" />
+              <h3 className="text-xl font-bold font-poppins mb-3 text-text">
+                Memuat Model AI...
+              </h3>
+              <div className="w-full max-w-md mb-4">
+                <Progress value={modelLoadingProgress} max={100} className="h-2" />
               </div>
+              <p className="text-gray-600 text-center">
+                Menyiapkan teknologi klasifikasi sampah canggih kami
+              </p>
             </div>
           ) : (
-            <div className="flex flex-col lg:flex-row gap-8 items-stretch">
-              <div className="lg:w-1/2">
-                {!imageElement ? (
-                  <div className="relative">
+            <div className="flex flex-col gap-8 items-stretch">
+              {!imageElement ? (
+                <div className="w-full max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center justify-center py-12">
                     <ImageUploader 
                       onImageCaptured={handleImageCaptured} 
-                      className="transition-all hover:scale-[1.01]"
+                      className="w-full max-w-xl transition-all"
                     />
+                    
+                    <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                          <FileQuestion className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className="text-sm text-gray-600">Format: JPG, PNG, GIF (Maks. 10MB)</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                          <Camera className="h-5 w-5 text-primary" />
+                        </div>
+                        <span className="text-sm text-gray-600">Atau gunakan kamera perangkat</span>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="neumorphic p-6 bg-background">
-                    <div className="neumorphic-inset p-4 bg-background flex flex-col items-center justify-center min-h-[400px]">
+                </div>
+              ) : (
+                <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+                  <div className="lg:w-1/2">
+                    <div className="p-4 flex flex-col items-center justify-center min-h-[400px]">
                       {isAnalyzing ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                           <div className="relative mb-6">
                             <div className="w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
                             <Bot className="h-8 w-8 text-primary absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
                           </div>
-                          <h3 className="text-xl font-bold text-text mb-2">AI Analysis in Progress</h3>
-                          <p className="text-gray-600">Our smart algorithm is analyzing your waste item...</p>
+                          <h3 className="text-xl font-bold text-text mb-2">Analisis AI Sedang Berjalan</h3>
+                          <p className="text-gray-600">Algoritma cerdas kami sedang menganalisis sampah Anda...</p>
+                          <div className="mt-6 w-full max-w-md">
+                            <Progress value={Math.random() * 100} max={100} className="h-2" />
+                            <p className="text-xs text-gray-500 mt-2">Mengidentifikasi jenis material dan karakteristik daur ulang</p>
+                          </div>
                         </div>
                       ) : (
-                        <img
-                          src={imageElement.src}
-                          alt="Uploaded waste"
-                          className="max-w-full max-h-[350px] object-contain rounded-lg shadow-lg"
-                        />
+                        <div className="relative group">
+                          <img
+                            src={imageElement.src}
+                            alt="Uploaded waste"
+                            className="max-w-full max-h-[350px] object-contain rounded-lg transition-all duration-300 group-hover:scale-[1.02]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex items-end justify-center p-4">
+                            <Button onClick={handleScanAgain} variant="outline" className="rounded-full bg-white/90 hover:bg-white">
+                              <RefreshCcw className="mr-2 h-4 w-4" /> Ambil Foto Ulang
+                            </Button>
+                          </div>
+                        </div>
                       )}
                     </div>
                     
                     {!isAnalyzing && !classificationResult && (
                       <div className="mt-4 flex justify-center">
                         <Button onClick={handleScanAgain} variant="outline" className="rounded-full">
-                          <RefreshCcw className="mr-2 h-4 w-4" /> Retake Photo
+                          <RefreshCcw className="mr-2 h-4 w-4" /> Ambil Foto Ulang
                         </Button>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              <div className="lg:w-1/2">
-                {classificationResult ? (
-                  <WasteAnalysisResults
-                    classificationResult={classificationResult}
-                    onScanAgain={handleScanAgain}
-                  />
-                ) : (
-                  <Card className="neumorphic p-6 bg-background h-full">
-                  </Card>
-                )}
-              </div>
+                  <div className="lg:w-1/2">
+                    {classificationResult ? (
+                      <WasteAnalysisResults
+                        classificationResult={classificationResult}
+                        onScanAgain={handleScanAgain}
+                      />
+                    ) : (
+                      <div className="h-full flex flex-col items-center justify-center p-6">
+                        <div className="text-center">
+                          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Bot className="h-8 w-8 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-bold font-poppins mb-3">Menunggu Analisis</h3>
+                          <p className="text-gray-600 mb-6">
+                            AI kami akan segera menganalisis gambar dan memberikan hasil identifikasi sampah beserta rekomendasi daur ulang.
+                          </p>
+                          <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                            <Info className="h-4 w-4" />
+                            <span>Hasil akan muncul di sini setelah analisis selesai</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -364,7 +403,7 @@ export default function Scan() {
       {showFeatures && (
         <section 
           ref={featuresSectionRef}
-          className="py-20 px-4 bg-white animate-in fade-in"
+          className="py-20 px-4 animate-in fade-in"
         >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
@@ -377,7 +416,7 @@ export default function Scan() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <Card className="p-6 border-none shadow-lg hover:shadow-xl transition-all">
+              <div className="p-6 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all">
                 <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Camera className="h-8 w-8 text-primary" />
                 </div>
@@ -385,9 +424,9 @@ export default function Scan() {
                 <p className="text-gray-600">
                   Ambil foto sampah menggunakan kamera atau unggah gambar yang sudah ada dari perangkat Anda.
                 </p>
-              </Card>
+              </div>
               
-              <Card className="p-6 border-none shadow-lg hover:shadow-xl transition-all">
+              <div className="p-6 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all">
                 <div className="bg-secondary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Bot className="h-8 w-8 text-secondary" />
                 </div>
@@ -395,9 +434,9 @@ export default function Scan() {
                 <p className="text-gray-600">
                   Algoritma pembelajaran mesin kami menganalisis gambar untuk mengidentifikasi jenis sampah dengan akurasi tinggi.
                 </p>
-              </Card>
+              </div>
               
-              <Card className="p-6 border-none shadow-lg hover:shadow-xl transition-all">
+              <div className="p-6 bg-white/50 backdrop-blur-sm rounded-2xl shadow-lg hover:shadow-xl transition-all">
                 <div className="bg-accent/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Recycle className="h-8 w-8 text-accent" />
                 </div>
@@ -405,7 +444,7 @@ export default function Scan() {
                 <p className="text-gray-600">
                   Dapatkan instruksi pembuangan yang dipersonalisasi, penilaian daur ulang, dan informasi dampak lingkungan.
                 </p>
-              </Card>
+              </div>
             </div>
             
             <div className="mt-16 text-center">
