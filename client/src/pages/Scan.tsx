@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import ImageUploader from "@/components/ImageUploader";
 import WasteAnalysisResults from "@/components/WasteAnalysisResults";
 import { Card, CardContent } from "@/components/ui/card";
-import { classifyImage, ClassificationResult, loadModel } from "@/lib/tensorflow";
+import { classifyWasteImage, ClassificationResult } from "@/lib/classify-waste-image";
 import { 
   Scan as ScanIcon,
   Camera,
@@ -31,11 +31,11 @@ export default function Scan() {
   const { toast } = useToast();
   const isMobile = useMobile();
 
-  // Load TensorFlow model on component mount
+  // Load AI model on component mount
   useEffect(() => {
-    const loadTensorFlowModel = async () => {
+    const loadAIModel = async () => {
       try {
-        // Mock loading progress since we can't get actual progress from loadModel
+        // Mock loading progress untuk UX yang lebih baik
         const interval = setInterval(() => {
           setModelLoadingProgress(prev => {
             if (prev >= 90) {
@@ -47,14 +47,14 @@ export default function Scan() {
         }, 300);
 
         try {
-          await loadModel();
-          console.log("TensorFlow.js loaded successfully");
+          // Simulate model loading - no actual model loading needed anymore
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log("AI model loaded successfully");
         } catch (err) {
-          // Continue with mock analysis even if model fails to load
-          console.error("Error loading TensorFlow model:", err);
+          console.error("Error loading AI model:", err);
           toast({
-            title: "Using simulation mode",
-            description: "AI model could not be loaded. Using simulated analysis for demo purposes.",
+            title: "Menggunakan mode simulasi",
+            description: "Model AI tidak dapat dimuat. Menggunakan analisis simulasi untuk tujuan demo.",
           });
         } finally {
           // Allow UI to progress regardless of model load success
@@ -73,7 +73,7 @@ export default function Scan() {
       }
     };
 
-    loadTensorFlowModel();
+    loadAIModel();
   }, [toast]);
 
   // Scroll to features section when it's shown
@@ -93,22 +93,48 @@ export default function Scan() {
       // Simulate longer analysis time for better UX
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const result = await classifyImage(imgElement);
-      setClassificationResult(result);
-      setScanCount(prev => prev + 1);
+      // Konversi gambar ke data URI untuk Gemini API
+      const canvas = document.createElement('canvas');
+      canvas.width = imgElement.width;
+      canvas.height = imgElement.height;
+      const ctx = canvas.getContext('2d');
       
-      // Show prompt toast for first-time users
-      if (scanCount === 0) {
-        toast({
-          title: "Analysis complete!",
-          description: "Scroll down to see detailed results and recommendations.",
-        });
+      if (ctx) {
+        ctx.drawImage(imgElement, 0, 0);
+        const dataUri = canvas.toDataURL('image/jpeg');
+        
+        // Gunakan fungsi classifyWasteImage dari classify-waste-image.ts
+        const wasteClassification = await classifyWasteImage({ photoDataUri: dataUri });
+        
+        // Konversi hasil klasifikasi ke format ClassificationResult
+        const result: ClassificationResult = {
+          type: wasteClassification.category,
+          confidence: wasteClassification.confidence,
+          isRecyclable: ['Plastic', 'Paper', 'Glass', 'Metal'].includes(wasteClassification.category),
+          disposalMethod: getDisposalMethod(wasteClassification.category),
+          materialComposition: getMaterialComposition(wasteClassification.category),
+          recyclabilityScore: getRecyclabilityScore(wasteClassification.category, wasteClassification.confidence),
+          recyclabilityDetails: getRecyclabilityDetails(wasteClassification.category),
+        };
+        
+        setClassificationResult(result);
+        setScanCount(prev => prev + 1);
+        
+        // Show prompt toast for first-time users
+        if (scanCount === 0) {
+          toast({
+            title: "Analisis selesai!",
+            description: "Gulir ke bawah untuk melihat hasil detail dan rekomendasi.",
+          });
+        }
+      } else {
+        throw new Error("Tidak dapat membuat canvas context");
       }
     } catch (error) {
       console.error("Error classifying image:", error);
       toast({
-        title: "Classification failed",
-        description: error instanceof Error ? error.message : "Failed to analyze the image. Please try again.",
+        title: "Klasifikasi gagal",
+        description: error instanceof Error ? error.message : "Gagal menganalisis gambar. Silakan coba lagi.",
         variant: "destructive",
       });
     } finally {
@@ -119,6 +145,123 @@ export default function Scan() {
   const handleScanAgain = () => {
     setImageElement(null);
     setClassificationResult(null);
+  };
+
+  // Fungsi helper untuk mendapatkan metode pembuangan berdasarkan kategori
+  const getDisposalMethod = (category: string): string => {
+    switch (category) {
+      case 'Plastic':
+        return "Bersihkan dengan seksama, periksa kode daur ulang, tempatkan di tempat sampah daur ulang plastik. Lepaskan tutup dan label jika diperlukan.";
+      case 'Paper':
+        return "Jaga agar tetap kering dan bersih, lepaskan lampiran non-kertas, tempatkan di tempat sampah daur ulang kertas. Hancurkan dokumen sensitif.";
+      case 'Glass':
+        return "Bilas dengan seksama, lepaskan tutup, tempatkan di tempat sampah daur ulang kaca. Pisahkan berdasarkan warna jika diperlukan secara lokal.";
+      case 'Metal':
+        return "Bersihkan dengan seksama, lepaskan komponen non-logam, tempatkan di tempat sampah daur ulang logam. Hancurkan kaleng jika memungkinkan.";
+      case 'Organic':
+        return "Tempatkan di kompos atau pengumpulan limbah hijau. Hindari daging/susu dalam kompos rumah. Pertimbangkan pengomposan cacing.";
+      case 'Electronic':
+        return "Bawa ke pusat pengumpulan e-waste. Jangan tempatkan di tempat sampah biasa karena mengandung bahan berbahaya.";
+      case 'Textile':
+        return "Donasikan jika masih dalam kondisi baik, atau bawa ke pusat daur ulang tekstil. Beberapa toko pakaian menerima tekstil bekas untuk didaur ulang.";
+      case 'Battery':
+        return "Jangan buang di tempat sampah biasa. Bawa ke pusat pengumpulan baterai atau toko elektronik yang menerima baterai bekas.";
+      default:
+        return "Periksa pedoman otoritas pengelolaan sampah setempat untuk pembuangan yang tepat.";
+    }
+  };
+
+  // Fungsi helper untuk mendapatkan komposisi material berdasarkan kategori
+  const getMaterialComposition = (category: string): string[] => {
+    const materialPropertiesMap: Record<string, string[]> = {
+      "Plastic": ["Berbasis polimer", "Turunan minyak bumi", "Tidak dapat terurai secara alami", "Ringan"],
+      "Paper": ["Serat selulosa", "Dapat terurai secara alami", "Pulp daur ulang", "Berbasis tanaman"],
+      "Glass": ["Berbasis silika", "Material inert", "Dapat didaur ulang tanpa batas", "Tahan panas"],
+      "Metal": ["Konduktif", "Dapat ditempa", "Nilai daur ulang tinggi", "Komposisi elemen"],
+      "Organic": ["Dapat terurai secara alami", "Dapat dikompos", "Kaya karbon", "Material alami"],
+      "Electronic": ["Papan sirkuit", "Material campuran", "Elemen langka", "Rakitan kompleks"],
+      "Textile": ["Serat kain", "Biodegradabilitas bervariasi", "Sering kali material campuran"],
+      "Battery": ["Mengandung logam berat", "Berpotensi beracun", "Memerlukan penanganan khusus"],
+      "Other": ["Material tidak terklasifikasi", "Mungkin memerlukan pemrosesan khusus"],
+    };
+    
+    return materialPropertiesMap[category] || materialPropertiesMap["Other"];
+  };
+
+  // Fungsi helper untuk mendapatkan skor daur ulang berdasarkan kategori dan kepercayaan
+  const getRecyclabilityScore = (category: string, confidence: number): number => {
+    const recyclableTypes = ["Plastic", "Paper", "Glass", "Metal"];
+    const compostableTypes = ["Organic"];
+    const specialHandlingTypes = ["Electronic", "Battery"];
+    
+    let recyclabilityBase = 0;
+    if (recyclableTypes.includes(category)) {
+      recyclabilityBase = Math.round(confidence * 100);
+      if (category === "Paper") recyclabilityBase -= 5; // Risiko kontaminasi
+      if (category === "Glass" || category === "Metal") recyclabilityBase += 5; // Daur ulang tinggi
+    } else if (compostableTypes.includes(category)) {
+      recyclabilityBase = 90; // Kompos tinggi
+    } else if (specialHandlingTypes.includes(category)) {
+      recyclabilityBase = 75; // Daur ulang khusus
+    } else {
+      recyclabilityBase = 20; // Daur ulang rendah
+    }
+    
+    return Math.min(98, recyclabilityBase);
+  };
+
+  // Fungsi helper untuk mendapatkan detail daur ulang berdasarkan kategori
+  const getRecyclabilityDetails = (category: string): string => {
+    const recyclableTypes = ["Plastic", "Paper", "Glass", "Metal"];
+    const compostableTypes = ["Organic"];
+    const specialHandlingTypes = ["Electronic", "Battery"];
+    
+    if (recyclableTypes.includes(category)) {
+      if (category === "Glass" || category === "Metal") {
+        return "Sangat dapat didaur ulang dengan proses standar";
+      }
+      return "Dapat didaur ulang dengan proses standar";
+    } else if (compostableTypes.includes(category)) {
+      return "Dapat dikompos dengan mudah di fasilitas pengomposan";
+    } else if (specialHandlingTypes.includes(category)) {
+      return "Dapat didaur ulang tetapi memerlukan penanganan khusus";
+    } else {
+      return "Sulit didaur ulang dengan metode standar";
+    }
+  };
+
+  // Fungsi helper untuk mendapatkan label kategori berdasarkan kategori
+  const getCategoryLabel = (category: string): string => {
+    const recyclableTypes = ["Plastic", "Paper", "Glass", "Metal"];
+    const compostableTypes = ["Organic"];
+    const specialHandlingTypes = ["Electronic", "Battery"];
+    
+    if (recyclableTypes.includes(category)) {
+      return "Recycle";
+    } else if (compostableTypes.includes(category)) {
+      return "Organik";
+    } else if (specialHandlingTypes.includes(category)) {
+      return "Penanganan Khusus";
+    } else {
+      return "Unknown";
+    }
+  };
+
+  // Fungsi helper untuk mendapatkan dampak lingkungan berdasarkan kategori
+  const getEnvironmentalImpact = (category: string): { carbonFootprintKg: number; energyRecoveryPotentialMJ: number } => {
+    const environmentalImpactMap: Record<string, { carbonFootprintKg: number; energyRecoveryPotentialMJ: number }> = {
+      "Plastic": { carbonFootprintKg: 2.5, energyRecoveryPotentialMJ: 20 },
+      "Paper": { carbonFootprintKg: 1.0, energyRecoveryPotentialMJ: 15 },
+      "Glass": { carbonFootprintKg: 0.8, energyRecoveryPotentialMJ: 10 },
+      "Metal": { carbonFootprintKg: 1.5, energyRecoveryPotentialMJ: 25 },
+      "Organic": { carbonFootprintKg: 0.3, energyRecoveryPotentialMJ: 5 },
+      "Electronic": { carbonFootprintKg: 5.0, energyRecoveryPotentialMJ: 30 },
+      "Battery": { carbonFootprintKg: 4.0, energyRecoveryPotentialMJ: 15 },
+      "Textile": { carbonFootprintKg: 1.8, energyRecoveryPotentialMJ: 18 },
+      "Unknown": { carbonFootprintKg: 2.0, energyRecoveryPotentialMJ: 10 },
+    };
+    
+    return environmentalImpactMap[category] || environmentalImpactMap["Unknown"];
   };
 
   return (
@@ -136,11 +279,11 @@ export default function Scan() {
               <span className="text-sm font-medium text-primary">PilaRahan Scanner</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold font-poppins mb-4 text-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Identify & Recycle
+              Identifikasi & Daur Ulang
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-              Our AI instantly identifies waste items and provides personalized recycling guidance.
-              Just snap a photo or upload an image to get started.
+              AI kami secara instan mengidentifikasi sampah dan memberikan panduan daur ulang yang dipersonalisasi.
+              Cukup ambil foto atau unggah gambar untuk memulai.
             </p>
           </div>
 
@@ -149,13 +292,13 @@ export default function Scan() {
               <div className="flex flex-col items-center justify-center min-h-[300px]">
                 <Bot className="h-16 w-16 text-primary animate-pulse mb-6" />
                 <h3 className="text-xl font-bold font-poppins mb-3 text-text">
-                  Loading AI Model...
+                  Memuat Model AI...
                 </h3>
                 <div className="w-full max-w-md mb-4">
                   <Progress value={modelLoadingProgress} max={100} className="h-2" />
                 </div>
                 <p className="text-gray-600 text-center">
-                  Preparing our advanced waste classification technology
+                  Menyiapkan teknologi klasifikasi sampah canggih kami
                 </p>
               </div>
             </div>
@@ -282,10 +425,10 @@ export default function Scan() {
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold font-poppins mb-4 text-text">
-                How Our AI Scanner Works
+                Bagaimana AI Scanner Kami Bekerja
               </h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Advanced technology that makes waste identification simple and accurate
+                Teknologi canggih yang membuat identifikasi sampah menjadi sederhana dan akurat
               </p>
             </div>
 
@@ -294,9 +437,9 @@ export default function Scan() {
                 <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Camera className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="text-xl font-bold font-poppins mb-3">Image Capture</h3>
+                <h3 className="text-xl font-bold font-poppins mb-3">Pengambilan Gambar</h3>
                 <p className="text-gray-600">
-                  Take a photo of any waste item using your camera or upload an existing image from your device.
+                  Ambil foto sampah menggunakan kamera atau unggah gambar yang sudah ada dari perangkat Anda.
                 </p>
               </Card>
               
@@ -304,9 +447,9 @@ export default function Scan() {
                 <div className="bg-secondary/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Bot className="h-8 w-8 text-secondary" />
                 </div>
-                <h3 className="text-xl font-bold font-poppins mb-3">AI Analysis</h3>
+                <h3 className="text-xl font-bold font-poppins mb-3">Analisis AI</h3>
                 <p className="text-gray-600">
-                  Our machine learning algorithm analyzes the image to identify the waste type with high accuracy.
+                  Algoritma pembelajaran mesin kami menganalisis gambar untuk mengidentifikasi jenis sampah dengan akurasi tinggi.
                 </p>
               </Card>
               
@@ -314,9 +457,9 @@ export default function Scan() {
                 <div className="bg-accent/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-6">
                   <Recycle className="h-8 w-8 text-accent" />
                 </div>
-                <h3 className="text-xl font-bold font-poppins mb-3">Smart Recommendations</h3>
+                <h3 className="text-xl font-bold font-poppins mb-3">Rekomendasi Cerdas</h3>
                 <p className="text-gray-600">
-                  Get personalized disposal instructions, recyclability assessment, and environmental impact information.
+                  Dapatkan instruksi pembuangan yang dipersonalisasi, penilaian daur ulang, dan informasi dampak lingkungan.
                 </p>
               </Card>
             </div>
@@ -326,7 +469,7 @@ export default function Scan() {
                 className="rounded-full text-lg py-6 px-8"
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               >
-                <ScanIcon className="mr-2 h-5 w-5" /> Try Waste Scanner
+                <ScanIcon className="mr-2 h-5 w-5" /> Coba Scanner Sampah
               </Button>
             </div>
           </div>
