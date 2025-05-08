@@ -311,21 +311,6 @@ export default function Scan() {
                       onImageCaptured={handleImageCaptured} 
                       className="transition-all hover:scale-[1.01]"
                     />
-                    
-                    {/* Feature badges */}
-                    <div className="absolute -right-12 top-1/3 transform -translate-y-1/2 hidden lg:block">
-                      <div className="flex flex-col gap-3">
-                        <div className="bg-white p-2 rounded-full shadow-lg flex items-center justify-center w-12 h-12">
-                          <Camera className="h-6 w-6 text-primary" />
-                        </div>
-                        <div className="bg-white p-2 rounded-full shadow-lg flex items-center justify-center w-12 h-12">
-                          <Upload className="h-6 w-6 text-secondary" />
-                        </div>
-                        <div className="bg-white p-2 rounded-full shadow-lg flex items-center justify-center w-12 h-12">
-                          <Recycle className="h-6 w-6 text-accent" />
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 ) : (
                   <div className="neumorphic p-6 bg-background">
@@ -367,47 +352,6 @@ export default function Scan() {
                   />
                 ) : (
                   <Card className="neumorphic p-6 bg-background h-full">
-                    <CardContent className="pt-6 flex flex-col items-center justify-center h-full">
-                      <div className="relative w-48 h-48 mb-6">
-                        <img
-                          src="https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80"
-                          alt="AI waste classification illustration"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                        <div className="absolute -right-4 -bottom-4 bg-primary text-white p-3 rounded-full shadow-lg">
-                          <Bot className="h-6 w-6" />
-                        </div>
-                      </div>
-                      
-                      {!isMobile && (
-                        <div className="grid grid-cols-2 gap-4 mt-4">
-                          <div className="flex items-center">
-                            <div className="p-2 rounded-full bg-primary/10 mr-3">
-                              <Recycle className="h-5 w-5 text-primary" />
-                            </div>
-                            <span className="text-sm">Precise Classification</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="p-2 rounded-full bg-secondary/10 mr-3">
-                              <Leaf className="h-5 w-5 text-secondary" />
-                            </div>
-                            <span className="text-sm">Eco-Friendly Tips</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="p-2 rounded-full bg-accent/10 mr-3">
-                              <FileQuestion className="h-5 w-5 text-accent" />
-                            </div>
-                            <span className="text-sm">Disposal Guidelines</span>
-                          </div>
-                          <div className="flex items-center">
-                            <div className="p-2 rounded-full bg-blue-500/10 mr-3">
-                              <Info className="h-5 w-5 text-blue-500" />
-                            </div>
-                            <span className="text-sm">Impact Insights</span>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
                   </Card>
                 )}
               </div>
