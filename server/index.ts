@@ -36,6 +36,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Health check endpoint for Railway
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', message: 'API is healthy' });
+});
+
 (async () => {
   const server = await registerRoutes(app);
 
