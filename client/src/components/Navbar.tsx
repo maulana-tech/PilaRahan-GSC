@@ -46,7 +46,7 @@ export function NavbarWrapper() {
             <a href="/" className="flex items-center group">
               <div className="relative overflow-hidden rounded-full p-1 bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 transition-transform duration-300 group-hover:scale-105">
                 <img
-                  src="/src/data/picture/Pilarahan.png"
+                  src="/images/Pilarahan.png"
                   alt="PilaRahan Logo"
                   className="h-8 w-8"
                 />
@@ -107,7 +107,7 @@ export function NavbarWrapper() {
             <a href="/" className="flex items-center group">
               <div className="relative overflow-hidden rounded-full p-1.5 bg-gradient-to-r from-emerald-100 to-emerald-50 dark:from-emerald-900 dark:to-emerald-800 transition-transform duration-300 group-hover:scale-105 shadow-md">
                 <img
-                  src="/src/data/picture/Pilarahan.png"
+                  src="/images/Pilarahan.png"
                   alt="PilaRahan Logo"
                   className="h-10 w-10"
                 />
