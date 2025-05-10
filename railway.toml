@@ -1,0 +1,21 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm run db:push && npm run build"
+
+[deploy]
+startCommand = "npm start"
+healthcheckPath = "/"
+healthcheckTimeout = 100
+
+[nixpacks]
+nodejs = "18"
+
+[[services]]
+internal_port = 5000
+protocol = "http"
+
+[services.concurrency]
+type = "connections"
+hard_limit = 25
+soft_limit = 20
+
