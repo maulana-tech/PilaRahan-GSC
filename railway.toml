@@ -1,0 +1,27 @@
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "NODE_ENV=production node dist/index.js"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 100
+
+[nixpacks]
+nodejs = "18"
+
+[nixpacks.variables]
+PORT = "3000"
+
+[[services]]
+internal_port = 3000
+protocol = "http"
+
+[services.concurrency]
+type = "connections"
+hard_limit = 25
+soft_limit = 20
+
+[env]
+PORT = "3000"
+
