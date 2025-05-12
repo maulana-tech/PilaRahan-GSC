@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { NavbarWrapper } from "@/components/Navbar";
 import { getAiChatResponse, getEnvironmentalTips } from "@/lib/aiChat";
+import Markdown from "markdown-to-jsx";
 
 interface Message {
   id: string;
@@ -223,7 +224,36 @@ export default function AiChat() {
                             {message.sender === "user" ? "Anda" : "PilaRahan AI"} • {message.timestamp.toLocaleTimeString()}
                           </span>
                         </div>
-                        <div className="whitespace-pre-line">{message.content}</div>
+                        {message.sender === "user" ? (
+                          <div className="whitespace-pre-line">{message.content}</div>
+                        ) : (
+                          <div className="markdown-content prose prose-sm max-w-none dark:prose-invert prose-headings:mb-2 prose-headings:mt-4 prose-p:my-2 prose-pre:my-0 prose-pre:p-0">
+                            <Markdown
+                              options={{
+                                overrides: {
+                                  pre: {
+                                    component: ({ children, ...props }) => (
+                                      <div className="not-prose my-4 overflow-hidden rounded-lg border bg-background/40">
+                                        <pre {...props} className="overflow-x-auto p-4">
+                                          {children}
+                                        </pre>
+                                      </div>
+                                    ),
+                                  },
+                                  code: {
+                                    component: ({ children, ...props }) => (
+                                      <code {...props} className="rounded-sm bg-muted px-1 py-0.5 font-mono text-sm">
+                                        {children}
+                                      </code>
+                                    ),
+                                  },
+                                },
+                              }}
+                            >
+                              {message.content}
+                            </Markdown>
+                          </div>
+                        )}
                         
                         {/* Tampilkan tips lingkungan jika ada */}
                         {message.sender === "ai" && message.environmentalTips && message.environmentalTips.length > 0 && (
