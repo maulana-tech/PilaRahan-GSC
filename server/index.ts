@@ -7,6 +7,12 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Health check endpoint for Railway (placed before any middleware for fastest response)
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.status(200).send('OK'); // Simplest possible response for faster processing
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -40,10 +46,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check endpoint for Railway
-app.get('/api/health', (_req, res) => {
-  res.status(200).json({ status: 'ok', message: 'API is healthy' });
-});
 
 (async () => {
   const server = await registerRoutes(app);
@@ -53,7 +55,8 @@ app.get('/api/health', (_req, res) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    // Removed throwing the error to avoid crashing the server
+    log(`Error: ${message} (${status})`);
   });
 
   // importantly only setup vite in development and after
