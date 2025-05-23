@@ -278,7 +278,7 @@ export default function Scan() {
               <ScanIcon className="h-6 w-6 text-primary mr-2" />
               <span className="text-sm font-medium text-primary">PilaRahan Scanner</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold font-poppins mb-4 text-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+            <h1 className="text-4xl md:text-6xl font-bold font-poppins mb-4 text-text bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary px-4 py-2">
               Identifikasi & Daur Ulang
             </h1>
             <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8">
